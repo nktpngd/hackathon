@@ -1,20 +1,46 @@
+import Image from 'next/image';
+
 interface BehaviorSelectionProps {
   selectedBehaviors: string[];
   onBehaviorToggle: (behavior: string) => void;
 }
 
 const behaviorOptions = [
-  { id: 'energy', label: 'Excessive energy and lack of control', emoji: '🐕' },
+  {
+    id: 'energy',
+    label: 'Excessive energy and lack of control',
+    image: '/images/behavior/jump.png',
+  },
   {
     id: 'aggression',
     label: 'Aggression towards people or other animals',
-    emoji: '🐕',
+    image: '/images/behavior/aggression.png',
   },
-  { id: 'leash', label: 'Leash pulling', emoji: '🐕' },
-  { id: 'separation', label: 'Separation anxiety', emoji: '🐕' },
-  { id: 'barking', label: 'Excessive barking', emoji: '🐕' },
-  { id: 'destructive', label: 'Destructive behavior', emoji: '🐕' },
-  { id: 'house', label: 'House soiling', emoji: '🐕' },
+  {
+    id: 'leash',
+    label: 'Leash pulling',
+    image: '/images/behavior/leash.png',
+  },
+  {
+    id: 'separation',
+    label: 'Separation anxiety',
+    image: '/images/behavior/separation.png',
+  },
+  {
+    id: 'barking',
+    label: 'Excessive barking',
+    image: '/images/behavior/barking.png',
+  },
+  {
+    id: 'destructive',
+    label: 'Destructive behavior',
+    image: '/images/behavior/destructive.png',
+  },
+  {
+    id: 'house',
+    label: 'House soiling',
+    image: '/images/behavior/soiling.png',
+  },
 ];
 
 export default function BehaviorSelection({
@@ -35,14 +61,28 @@ export default function BehaviorSelection({
           <button
             key={behavior.id}
             onClick={() => onBehaviorToggle(behavior.label)}
-            className={`w-full p-4 rounded-2xl text-left transition-colors flex items-center space-x-3 ${
+            className={`w-full rounded-2xl text-left transition-colors flex items-center ${
               selectedBehaviors.includes(behavior.label)
                 ? 'border-[#BCE6F8] bg-[#D3F2FF] border-1'
                 : 'border-[#DDDDDD] bg-[#F3F3F3] hover:border-gray-300'
             }`}
           >
+            <div className='w-20 h-20 relative flex-shrink-0'>
+              <Image
+                src={behavior.image}
+                alt={behavior.label}
+                className='object-contain'
+                width={80}
+                height={80}
+              />
+            </div>
+            <div className='flex-1 px-3 py-4'>
+              <span className='text-sm font-medium text-[#383C44]'>
+                {behavior.label}
+              </span>
+            </div>
             <div
-              className={`w-5 h-5 rounded flex items-center justify-center ${
+              className={`w-5 h-5 rounded flex items-center justify-center mr-4 ${
                 selectedBehaviors.includes(behavior.label)
                   ? 'border-[#FF574C] bg-[#FF574C] border-1'
                   : 'border-[#DDDDDD] bg-white'
@@ -51,12 +91,6 @@ export default function BehaviorSelection({
               {selectedBehaviors.includes(behavior.label) && (
                 <span className='text-white text-xs'>✓</span>
               )}
-            </div>
-            <div className='flex items-center space-x-3'>
-              <div className='text-2xl'>{behavior.emoji}</div>
-              <span className='text-sm font-medium text-[#383C44]'>
-                {behavior.label}
-              </span>
             </div>
           </button>
         ))}
