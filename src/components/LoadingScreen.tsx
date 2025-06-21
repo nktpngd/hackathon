@@ -73,23 +73,28 @@ export default function LoadingScreen({
       </div>
 
       {/* Quote card */}
-      <div className='bg-blue-50 rounded-2xl p-6 mx-auto max-w-md'>
-        <div className='flex items-start space-x-3'>
-          <div className='text-blue-400 text-2xl leading-none'>&ldquo;</div>
-          <div className='flex-1'>
-            <p className='text-gray-700 font-medium mb-3'>
-              There are no bad dogs — only bad training
-            </p>
-            <div className='flex items-center space-x-2'>
-              <Image
-                src='/logo.svg'
-                alt='Paw Champ'
-                width={91}
-                height={22}
-                className='w-[91px] h-[22px]'
-              />
-              <span className='text-sm text-gray-600 font-medium'>team</span>
-            </div>
+      <div className='bg-[#D3F2FF] rounded-2xl p-4 max-w-md relative'>
+        <Image
+          src='/images/quote.png'
+          alt='Quote decoration'
+          width={40}
+          height={40}
+          className='w-10 h-10 absolute top-[-26] left-4'
+        />
+        <div className='text-left flex flex-col gap-4'>
+          <p className='text-[#1E1E1E] font-bold text-2xl text-left'>
+            There are no bad dogs — only bad training
+          </p>
+          <div className='h-[1px] bg-[#BCE6F8] w-full' />
+          <div className='flex items-center gap-2 justify-start'>
+            <Image
+              src='/logo.svg'
+              alt='Paw Champ'
+              width={91}
+              height={22}
+              className='w-[91px] h-[22px]'
+            />
+            <span className='text-sm text-[#16191E] font-medium'>team</span>
           </div>
         </div>
       </div>

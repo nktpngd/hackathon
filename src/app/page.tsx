@@ -38,7 +38,6 @@ export default function Home() {
     } else {
       // Submit quiz data
       console.log('Quiz completed:', quizData);
-      alert('Quiz completed! Check console for results.');
     }
   };
 
@@ -124,7 +123,6 @@ export default function Home() {
             onComplete={() => {
               // Submit quiz data
               console.log('Quiz completed:', quizData);
-              alert('Quiz completed! Check console for results.');
             }}
           />
         );
