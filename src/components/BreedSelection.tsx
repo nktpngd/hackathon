@@ -25,10 +25,10 @@ export default function BreedSelection({
 }: BreedSelectionProps) {
   return (
     <div className='flex flex-col items-center space-y-6'>
-      <h1 className='text-2xl font-semibold text-[#383C44] text-center'>
+      <h1 className='text-[28px] font-bold text-[#383C44] text-center'>
         Choose your dog&apos;s breed
       </h1>
-      <div className='grid grid-cols-2 gap-3 w-full max-w-md'>
+      <div className='flex flex-wrap gap-3 items-center justify-center w-full max-w-md'>
         {breedOptions.map(breed => (
           <button
             key={breed}
@@ -36,10 +36,10 @@ export default function BreedSelection({
               onBreedSelect(breed);
               onCustomBreedChange('');
             }}
-            className={`p-3 rounded-lg border-2 text-sm transition-colors ${
+            className={`p-2 rounded-lg border-1 text-sm transition-colors ${
               selectedBreed === breed
                 ? 'border-[#383C44] bg-[#383C44] text-white'
-                : 'border-[#DDDDDD] bg-[#F3F3F3] text-[#383C44] hover:border-gray-300'
+                : 'border-[#383C44] text-[#383C44] hover:border-gray-300'
             }`}
           >
             {breed}
@@ -58,7 +58,7 @@ export default function BreedSelection({
             onBreedSelect(e.target.value);
           }}
           placeholder='e.g., Goldendoodle'
-          className='w-full p-3 border-2 border-[#DDDDDD] bg-[#F3F3F3] rounded-lg focus:border-[#FF574C] focus:outline-none text-[#383C44] placeholder-[#383C44] placeholder-opacity-50'
+          className='w-full p-3 border-1 border-[#DDDDDD] bg-[#F3F3F3] rounded-2xl focus:border-[#FF574C] focus:outline-none text-[#383C44] placeholder-[#383C44] placeholder-opacity-50'
         />
       </div>
     </div>

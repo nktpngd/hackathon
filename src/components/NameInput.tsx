@@ -5,8 +5,8 @@ interface NameInputProps {
 
 export default function NameInput({ name, onNameChange }: NameInputProps) {
   return (
-    <div className='flex flex-col items-center space-y-6'>
-      <h1 className='text-2xl font-semibold text-[#383C44] text-center'>
+    <div className='flex flex-col items-center space-y-4'>
+      <h1 className='text-[28px] font-bold text-[#383C44] text-center'>
         Your dog&apos;s name is...
       </h1>
       <div className='w-full max-w-sm'>
@@ -18,7 +18,7 @@ export default function NameInput({ name, onNameChange }: NameInputProps) {
           value={name}
           onChange={e => onNameChange(e.target.value)}
           placeholder='e.g., Buddy'
-          className='w-full p-3 border-2 border-[#DDDDDD] bg-[#F3F3F3] rounded-lg focus:border-[#FF574C] focus:outline-none text-[#383C44] placeholder-[#383C44] placeholder-opacity-50'
+          className='w-full p-3 border-1 border-[#DDDDDD] bg-[#F3F3F3] rounded-2xl focus:border-[#FF574C] focus:outline-none text-[#383C44] placeholder-[#383C44] placeholder-opacity-50'
         />
       </div>
     </div>

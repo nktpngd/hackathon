@@ -22,12 +22,12 @@ export default function BehaviorSelection({
   onBehaviorToggle,
 }: BehaviorSelectionProps) {
   return (
-    <div className='flex flex-col items-center space-y-6'>
-      <h1 className='text-2xl font-semibold text-[#383C44] text-center'>
+    <div className='flex flex-col items-center mb-2'>
+      <h1 className='text-[28px] font-bold text-[#383C44] text-center'>
         Which of these behavioral issues or tendencies do you observe in your
         dog?
       </h1>
-      <p className='text-sm text-[#383C44] opacity-70 text-center'>
+      <p className='text-sm text-[#383C44] opacity-70 text-center mb-4'>
         Choose all that apply:
       </p>
       <div className='space-y-3 w-full max-w-md'>
@@ -35,16 +35,16 @@ export default function BehaviorSelection({
           <button
             key={behavior.id}
             onClick={() => onBehaviorToggle(behavior.label)}
-            className={`w-full p-4 rounded-lg border-2 text-left transition-colors flex items-center space-x-3 ${
+            className={`w-full p-4 rounded-2xl text-left transition-colors flex items-center space-x-3 ${
               selectedBehaviors.includes(behavior.label)
-                ? 'border-[#BCE6F8] bg-[#D3F2FF]'
+                ? 'border-[#BCE6F8] bg-[#D3F2FF] border-1'
                 : 'border-[#DDDDDD] bg-[#F3F3F3] hover:border-gray-300'
             }`}
           >
             <div
-              className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
+              className={`w-5 h-5 rounded flex items-center justify-center ${
                 selectedBehaviors.includes(behavior.label)
-                  ? 'border-[#FF574C] bg-[#FF574C]'
+                  ? 'border-[#FF574C] bg-[#FF574C] border-1'
                   : 'border-[#DDDDDD] bg-white'
               }`}
             >
