@@ -1,103 +1,176 @@
+'use client';
+
+import { useState } from 'react';
 import Image from 'next/image';
+import AgeSelection from '../components/AgeSelection';
+import NameInput from '../components/NameInput';
+import BreedSelection from '../components/BreedSelection';
+import GenderSelection from '../components/GenderSelection';
+import BehaviorSelection from '../components/BehaviorSelection';
+
+interface QuizData {
+  age: string;
+  name: string;
+  breed: string;
+  gender: 'boy' | 'girl' | '';
+  behaviors: string[];
+}
+
+const initialQuizData: QuizData = {
+  age: '',
+  name: '',
+  breed: '',
+  gender: '',
+  behaviors: [],
+};
 
 export default function Home() {
-  return (
-    <div className='grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]'>
-      <main className='flex flex-col gap-[32px] row-start-2 items-center sm:items-start'>
-        <Image
-          className='dark:invert'
-          src='/next.svg'
-          alt='Next.js logo'
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className='list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]'>
-          <li className='mb-2 tracking-[-.01em]'>
-            Get started by editing{' '}
-            <code className='bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold'>
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className='tracking-[-.01em]'>
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [currentStep, setCurrentStep] = useState(0);
+  const [quizData, setQuizData] = useState<QuizData>(initialQuizData);
+  const [customBreed, setCustomBreed] = useState('');
 
-        <div className='flex gap-4 items-center flex-col sm:flex-row'>
-          <a
-            className='rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto'
-            href='https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app'
-            target='_blank'
-            rel='noopener noreferrer'
-          >
-            <Image
-              className='dark:invert'
-              src='/vercel.svg'
-              alt='Vercel logomark'
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className='rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]'
-            href='https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app'
-            target='_blank'
-            rel='noopener noreferrer'
-          >
-            Read our docs
-          </a>
+  const handleNext = () => {
+    if (currentStep < 5) {
+      setCurrentStep(currentStep + 1);
+    } else {
+      // Submit quiz data
+      console.log('Quiz completed:', quizData);
+      alert('Quiz completed! Check console for results.');
+    }
+  };
+
+  const updateQuizData = (field: keyof QuizData, value: any) => {
+    setQuizData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const toggleBehavior = (behavior: string) => {
+    setQuizData(prev => ({
+      ...prev,
+      behaviors: prev.behaviors.includes(behavior)
+        ? prev.behaviors.filter(b => b !== behavior)
+        : [...prev.behaviors, behavior],
+    }));
+  };
+
+  const canProceed = () => {
+    switch (currentStep) {
+      case 0:
+        return quizData.age !== '';
+      case 1:
+        return quizData.name.trim() !== '';
+      case 2:
+        return quizData.breed !== '' || customBreed.trim() !== '';
+      case 3:
+        return quizData.gender !== '';
+      case 4:
+      case 5:
+        return true; // Behaviors are optional
+      default:
+        return false;
+    }
+  };
+
+  const renderStep = () => {
+    switch (currentStep) {
+      case 0:
+        return (
+          <AgeSelection
+            selectedAge={quizData.age}
+            onAgeSelect={age => updateQuizData('age', age)}
+          />
+        );
+
+      case 1:
+        return (
+          <NameInput
+            name={quizData.name}
+            onNameChange={name => updateQuizData('name', name)}
+          />
+        );
+
+      case 2:
+        return (
+          <BreedSelection
+            selectedBreed={quizData.breed}
+            customBreed={customBreed}
+            onBreedSelect={breed => updateQuizData('breed', breed)}
+            onCustomBreedChange={setCustomBreed}
+          />
+        );
+
+      case 3:
+        return (
+          <GenderSelection
+            selectedGender={quizData.gender}
+            onGenderSelect={gender => updateQuizData('gender', gender)}
+          />
+        );
+
+      case 4:
+      case 5:
+        return (
+          <BehaviorSelection
+            selectedBehaviors={quizData.behaviors}
+            onBehaviorToggle={toggleBehavior}
+          />
+        );
+
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className='min-h-screen bg-white flex flex-col'>
+      {/* Header */}
+      <header className='flex items-center justify-center py-6 border-b border-gray-200'>
+        <div className='flex items-center space-x-2'>
+          <Image
+            src='/logo.svg'
+            alt='Paw Champ'
+            width={137}
+            height={32}
+            className='w-[137px] h-[32px]'
+          />
+        </div>
+      </header>
+
+      {/* Progress Bar */}
+      <div className='w-full bg-gray-200 h-1'>
+        <div
+          className='bg-[#FF574C] h-1 transition-all duration-300'
+          style={{ width: `${((currentStep + 1) / 6) * 100}%` }}
+        />
+      </div>
+
+      {/* Main Content - flex-1 to take remaining space */}
+      <main className='flex-1 flex flex-col items-center justify-center px-6 py-12'>
+        <div className='w-full max-w-lg'>
+          <div className='text-center mb-8'>
+            <p className='text-sm text-[#383C44]'>
+              Let&apos;s create a personalized training plan for your dog
+            </p>
+          </div>
+
+          {renderStep()}
         </div>
       </main>
-      <footer className='row-start-3 flex gap-[24px] flex-wrap items-center justify-center'>
-        <a
-          className='flex items-center gap-2 hover:underline hover:underline-offset-4'
-          href='https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app'
-          target='_blank'
-          rel='noopener noreferrer'
+
+      {/* Fixed Bottom Section with Navigation */}
+      <div className='bg-white border-t border-gray-100 px-6 py-4'>
+        {/* Main Navigation Button */}
+        <button
+          onClick={handleNext}
+          disabled={!canProceed()}
+          className={`w-full py-4 px-8 rounded-full font-medium transition-colors ${
+            canProceed()
+              ? 'bg-gradient-to-r from-[#FF765A] to-[#FF4040] hover:opacity-90 text-white'
+              : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+          }`}
         >
-          <Image
-            aria-hidden
-            src='/file.svg'
-            alt='File icon'
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className='flex items-center gap-2 hover:underline hover:underline-offset-4'
-          href='https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app'
-          target='_blank'
-          rel='noopener noreferrer'
-        >
-          <Image
-            aria-hidden
-            src='/window.svg'
-            alt='Window icon'
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className='flex items-center gap-2 hover:underline hover:underline-offset-4'
-          href='https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app'
-          target='_blank'
-          rel='noopener noreferrer'
-        >
-          <Image
-            aria-hidden
-            src='/globe.svg'
-            alt='Globe icon'
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+          {currentStep === 5 ? 'Get Started' : 'Next step'}
+        </button>
+      </div>
     </div>
   );
 }
