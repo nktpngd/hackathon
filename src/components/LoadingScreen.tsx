@@ -1,16 +1,26 @@
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 
 interface LoadingScreenProps {
   dogName: string;
+  breed: string;
+  gender: 'boy' | 'girl' | '';
+  age: string;
+  behaviors: string[];
   onComplete: () => void;
 }
 
 export default function LoadingScreen({
   dogName,
+  breed,
+  gender,
+  age,
+  behaviors,
   onComplete,
 }: LoadingScreenProps) {
   const [progress, setProgress] = useState(0);
+  const router = useRouter();
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -18,6 +28,15 @@ export default function LoadingScreen({
         if (prev >= 100) {
           clearInterval(interval);
           setTimeout(() => {
+            // Navigate to results page with query parameters
+            const params = new URLSearchParams({
+              name: dogName,
+              breed,
+              gender,
+              age,
+              behaviors: behaviors.join(','),
+            });
+            router.push(`/results?${params.toString()}`);
             onComplete();
           }, 1000);
           return 100;

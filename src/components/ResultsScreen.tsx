@@ -1,0 +1,246 @@
+import Image from 'next/image';
+
+interface ResultsScreenProps {
+  dogName: string;
+  breed: string;
+  gender: 'boy' | 'girl' | '';
+  age: string;
+  behaviors: string[];
+}
+
+export default function ResultsScreen({
+  dogName,
+  breed,
+  gender,
+  age,
+  behaviors,
+}: ResultsScreenProps) {
+  // Get age display text
+  const getAgeDisplay = (age: string) => {
+    switch (age) {
+      case 'puppy':
+        return 'Young (1-3 years)';
+      case 'adolescent':
+        return 'Adolescent (3-6 years)';
+      case 'adult':
+        return 'Adult (6-8 years)';
+      case 'senior':
+        return 'Senior (8+ years)';
+      default:
+        return age;
+    }
+  };
+
+  // Get dog image based on age
+  const getDogImage = (age: string) => {
+    switch (age) {
+      case 'puppy':
+        return '/images/puppy.png';
+      case 'adolescent':
+        return '/images/adolescent.png';
+      case 'adult':
+        return '/images/adult.png';
+      case 'senior':
+        return '/images/senior.png';
+      default:
+        return '/images/adult.png';
+    }
+  };
+
+  // Generate summary based on behaviors
+  const generateSummary = () => {
+    if (behaviors.includes('aggression')) {
+      return `Your ${breed} ${age} is exhibiting early signs of aggression towards people or other animals. While puppies can sometimes display challenging behaviors as they adjust to new environments, it's important to address aggression early for proper social development and safety`;
+    }
+    if (behaviors.includes('barking')) {
+      return `Your ${breed} ${age} is showing excessive barking behavior. This is common and can be effectively managed through consistent training and addressing the underlying causes of the barking.`;
+    }
+    if (behaviors.includes('destructive')) {
+      return `Your ${breed} ${age} is exhibiting destructive behaviors. This often stems from boredom, anxiety, or excess energy and can be redirected through proper training and mental stimulation.`;
+    }
+    if (behaviors.includes('jump')) {
+      return `Your ${breed} ${age} is jumping on people, which is a common behavior that can be corrected through consistent training and positive reinforcement techniques.`;
+    }
+    if (behaviors.includes('leash')) {
+      return `Your ${breed} ${age} is having difficulty with leash walking. This is very trainable with patience and the right techniques to make walks enjoyable for both of you.`;
+    }
+    if (behaviors.includes('separation')) {
+      return `Your ${breed} ${age} is experiencing separation anxiety. This is a common issue that can be addressed through gradual training and building confidence when alone.`;
+    }
+    if (behaviors.includes('soiling')) {
+      return `Your ${breed} ${age} is having house training challenges. With consistent routine and positive reinforcement, house training can be successfully achieved.`;
+    }
+
+    return `Your ${breed} ${age} is showing great potential for training. Every dog can benefit from structured training to enhance their natural abilities and strengthen your bond together.`;
+  };
+
+  // Generate goal based on behaviors
+  const generateGoal = () => {
+    if (behaviors.includes('aggression')) {
+      return 'Promote positive socialization experiences and reduce aggressive behaviors through consistent training and early intervention.';
+    }
+    if (behaviors.includes('barking')) {
+      return 'Reduce excessive barking and teach appropriate communication through positive reinforcement and environmental management.';
+    }
+    if (behaviors.includes('destructive')) {
+      return 'Redirect destructive energy into positive activities and provide appropriate outlets for natural behaviors.';
+    }
+    if (behaviors.includes('jump')) {
+      return 'Teach proper greeting behaviors and impulse control through consistent training and positive reinforcement.';
+    }
+    if (behaviors.includes('leash')) {
+      return 'Develop loose leash walking skills and create enjoyable walking experiences for both dog and owner.';
+    }
+    if (behaviors.includes('separation')) {
+      return 'Build confidence and independence while reducing anxiety when left alone through gradual training.';
+    }
+    if (behaviors.includes('soiling')) {
+      return 'Establish reliable house training habits through consistent routine and positive reinforcement.';
+    }
+
+    return 'Build a strong foundation of obedience and enhance the human-dog bond through positive training methods.';
+  };
+
+  return (
+    <div className='bg-[#FF6B5A] min-h-screen'>
+      {/* Header */}
+      <div className='px-6 py-6 text-white'>
+        <h1 className='text-white text-[26px] font-bold leading-tight'>
+          {dogName} personalized
+          <br />
+          health & training plan is
+          <br />
+          ready!
+        </h1>
+      </div>
+
+      {/* Main Content Card */}
+      <div className='bg-white rounded-t-3xl pb-20'>
+        <div className='px-6 py-6 space-y-6'>
+          {/* Dog Info Card */}
+          <div className='bg-[#F3F3F3] rounded-2xl p-4 flex items-center space-x-4'>
+            <div className='w-20 h-20 rounded-2xl overflow-hidden flex-shrink-0'>
+              <Image
+                src={getDogImage(age)}
+                alt={dogName}
+                width={80}
+                height={80}
+                className='w-full h-full object-cover'
+              />
+            </div>
+            <div className='flex-1'>
+              <h2 className='font-bold text-lg text-gray-800 mb-1'>
+                {dogName}
+              </h2>
+              <div className='flex flex-wrap gap-2 text-sm'>
+                <span className='text-[#1998CD] font-medium bg-[#E1F2F9] py-1 px-2 rounded-lg'>
+                  {breed}
+                </span>
+                {gender && (
+                  <span className='text-[#1998CD] bg-[#E1F2F9] font-medium rounded-lg py-1 px-2 '>
+                    {gender === 'boy' ? 'Boy' : 'Girl'}
+                  </span>
+                )}
+              </div>
+              <p className='text-[#1998CD] bg-[#E1F2F9] w-fit text-sm font-medium mt-1 rounded-lg py-1 px-2 '>
+                {getAgeDisplay(age)}
+              </p>
+            </div>
+          </div>
+
+          {/* Summary Section */}
+          <div className='space-y-3'>
+            <h3 className='text-2xl font-bold text-gray-800'>Summary</h3>
+            <p className='text-gray-600 leading-relaxed'>{generateSummary()}</p>
+          </div>
+
+          {/* Goal Section */}
+          <div className='space-y-3'>
+            <h3 className='text-2xl font-bold text-gray-800'>Goal</h3>
+            <div className='bg-[#FFEDB4] rounded-2xl p-4'>
+              <p className='text-[#B88933] leading-relaxed'>{generateGoal()}</p>
+            </div>
+          </div>
+
+          {/* What's Included Section */}
+          <div className='space-y-4'>
+            <h3 className='text-2xl font-bold text-gray-800'>
+              What&apos;s included in the plan
+            </h3>
+
+            <div className='relative'>
+              {/* Connecting line */}
+              <div className='absolute left-4 top-8 bottom-8 w-0.5 bg-gray-300 z-0'></div>
+
+              <div className='space-y-4 relative z-10'>
+                <div className='flex items-center space-x-4'>
+                  <div className='w-8 h-8 rounded-full bg-white border-2 border-gray-300 flex items-center justify-center flex-shrink-0 relative z-10'>
+                    <span className='text-sm font-medium text-gray-600'>1</span>
+                  </div>
+                  <div className='flex-1 bg-[#F3F3F3] rounded-xl px-4 py-3'>
+                    <p className='text-gray-800 font-medium'>
+                      Daily walks of 45 minutes
+                    </p>
+                  </div>
+                </div>
+
+                <div className='flex items-center space-x-4'>
+                  <div className='w-8 h-8 rounded-full bg-white border-2 border-gray-300 flex items-center justify-center flex-shrink-0 relative z-10'>
+                    <span className='text-sm font-medium text-gray-600'>2</span>
+                  </div>
+                  <div className='flex-1 bg-[#F3F3F3] rounded-xl px-4 py-3'>
+                    <p className='text-gray-800 font-medium'>
+                      Scent games / mental tasks
+                    </p>
+                  </div>
+                </div>
+
+                <div className='flex items-center space-x-4'>
+                  <div className='w-8 h-8 rounded-full bg-white border-2 border-gray-300 flex items-center justify-center flex-shrink-0 relative z-10'>
+                    <span className='text-sm font-medium text-gray-600'>3</span>
+                  </div>
+                  <div className='flex-1 bg-[#F3F3F3] rounded-xl px-4 py-3'>
+                    <p className='text-gray-800 font-medium'>
+                      Recommended course: &quot;Sit, Stay, Come&quot;
+                    </p>
+                  </div>
+                </div>
+
+                <div className='flex items-center space-x-4'>
+                  <div className='w-8 h-8 rounded-full bg-white border-2 border-gray-300 flex items-center justify-center flex-shrink-0 relative z-10'>
+                    <span className='text-sm font-medium text-gray-600'>4</span>
+                  </div>
+                  <div className='flex-1 bg-[#F3F3F3] rounded-xl px-4 py-3'>
+                    <p className='text-gray-800 font-medium'>
+                      Scent games / mental tasks
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Fixed Bottom Button */}
+        <div className='fixed bottom-6 left-4 right-4 z-50'>
+          <button className='w-full bg-[#15CF7E] hover:bg-green-600 text-white font-medium py-4 px-6 rounded-2xl transition-colors flex items-center justify-center space-x-2'>
+            <span>Start my plan</span>
+            <svg
+              className='w-5 h-5'
+              fill='none'
+              stroke='currentColor'
+              viewBox='0 0 24 24'
+            >
+              <path
+                strokeLinecap='round'
+                strokeLinejoin='round'
+                strokeWidth={2}
+                d='M9 5l7 7-7 7'
+              />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}

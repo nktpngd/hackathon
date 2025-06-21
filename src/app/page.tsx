@@ -120,9 +120,12 @@ export default function Home() {
         return (
           <LoadingScreen
             dogName={quizData.name}
+            breed={quizData.breed || customBreed}
+            gender={quizData.gender}
+            age={quizData.age}
+            behaviors={quizData.behaviors}
             onComplete={() => {
-              // Submit quiz data
-              console.log('Quiz completed:', quizData);
+              console.log('Quiz completed, navigating to results');
             }}
           />
         );
