@@ -41,7 +41,7 @@ export default function Home() {
     }
   };
 
-  const updateQuizData = (field: keyof QuizData, value: any) => {
+  const updateQuizData = (field: keyof QuizData, value: string | string[]) => {
     setQuizData(prev => ({ ...prev, [field]: value }));
   };
 

@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
 
         if (parsedResponse.toDoPlan && Array.isArray(parsedResponse.toDoPlan)) {
           tasks = parsedResponse.toDoPlan
-            .map((item: any) => item.task || '')
+            .map((item: { task?: string }) => item.task || '')
             .filter((task: string) => task.length > 0);
         }
       }

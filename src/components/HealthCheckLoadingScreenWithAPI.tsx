@@ -136,7 +136,7 @@ export default function HealthCheckLoadingScreenWithAPI({
 
           {/* Subheading */}
           <p className='text-lg text-gray-600 text-center'>
-            Analyzing your pet's health data and generating personalized
+            Analyzing your pet&apos;s health data and generating personalized
             recommendations.
           </p>
 

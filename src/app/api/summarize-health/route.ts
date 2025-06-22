@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
         // Parse recommended todos
         if (parsedResponse.toDoPlan && Array.isArray(parsedResponse.toDoPlan)) {
           recommendedTodos = parsedResponse.toDoPlan
-            .map((item: any) => item.task)
+            .map((item: { task?: string }) => item.task)
             .filter(
               (task: string) => typeof task === 'string' && task.length > 0
             );

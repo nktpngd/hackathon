@@ -30,7 +30,7 @@ export default function ResultsScreen({
   const hasLoadedRef = useRef(false);
 
   // Memoize behaviors array to prevent unnecessary re-renders
-  const stableBehaviors = useMemo(() => behaviors, [behaviors.join(',')]);
+  const stableBehaviors = useMemo(() => behaviors, [behaviors]);
 
   // Save dog profile data when component mounts
   useEffect(() => {

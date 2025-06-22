@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { HealthSummary } from '@/services/planGenerator';
@@ -29,6 +29,58 @@ export default function HealthCheckSummaryPage() {
     null
   );
   const [recommendedTodos, setRecommendedTodos] = useState<string[]>([]);
+
+  const setMockTodos = useCallback(() => {
+    const mockTodos = ['Take for a 30-minute walk', 'Practice basic commands'];
+    setRecommendedTodos(mockTodos);
+  }, []);
+
+  const setMockSummary = useCallback((displayData: HealthCheckDisplayData) => {
+    const mockSummary = {
+      overallStatus: 'Good',
+      summary: `Your ${displayData.breed} ${displayData.age} is showing good overall health indicators based on today's assessment.`,
+      recommendations: [
+        'Continue daily exercise routine',
+        'Maintain consistent feeding schedule',
+        'Keep up with regular grooming',
+        'Schedule routine vet check-up',
+      ],
+    };
+    setHealthSummary(mockSummary);
+  }, []);
+
+  const setMockData = useCallback(() => {
+    const dogProfile = getDogProfile();
+
+    const mockData: HealthCheckDisplayData = {
+      date: '21.06.25',
+      dogName: dogProfile.name,
+      breed: dogProfile.breed,
+      gender: dogProfile.gender,
+      age: dogProfile.age,
+      mood: 'Happy',
+      activity: 'Playful',
+      symptoms: ['No symptoms'],
+      behaviors: [],
+      feeding: 'Good appetite',
+      description: 'Had a great day at the park',
+    };
+    setHealthData(mockData);
+
+    // Set mock health summary
+    setHealthSummary({
+      overallStatus: 'Excellent',
+      summary: `Your ${dogProfile.breed} ${dogProfile.age} is showing excellent health indicators today. ${dogProfile.name} appears to be in great spirits with no concerning symptoms and is maintaining good eating habits.`,
+      recommendations: [
+        'Continue daily exercise routine',
+        'Maintain consistent feeding schedule',
+        'Keep up with regular grooming',
+        'Schedule routine vet check-up',
+      ],
+    });
+
+    setMockTodos();
+  }, [setMockTodos]);
 
   useEffect(() => {
     const loadHealthData = () => {
@@ -97,59 +149,7 @@ export default function HealthCheckSummaryPage() {
     };
 
     loadHealthData();
-  }, []);
-
-  const setMockTodos = () => {
-    const mockTodos = ['Take for a 30-minute walk', 'Practice basic commands'];
-    setRecommendedTodos(mockTodos);
-  };
-
-  const setMockSummary = (displayData: HealthCheckDisplayData) => {
-    const mockSummary = {
-      overallStatus: 'Good',
-      summary: `Your ${displayData.breed} ${displayData.age} is showing good overall health indicators based on today's assessment.`,
-      recommendations: [
-        'Continue daily exercise routine',
-        'Maintain consistent feeding schedule',
-        'Keep up with regular grooming',
-        'Schedule routine vet check-up',
-      ],
-    };
-    setHealthSummary(mockSummary);
-  };
-
-  const setMockData = () => {
-    const dogProfile = getDogProfile();
-
-    const mockData: HealthCheckDisplayData = {
-      date: '21.06.25',
-      dogName: dogProfile.name,
-      breed: dogProfile.breed,
-      gender: dogProfile.gender,
-      age: dogProfile.age,
-      mood: 'Happy',
-      activity: 'Playful',
-      symptoms: ['No symptoms'],
-      behaviors: [],
-      feeding: 'Good appetite',
-      description: 'Had a great day at the park',
-    };
-    setHealthData(mockData);
-
-    // Set mock health summary
-    setHealthSummary({
-      overallStatus: 'Excellent',
-      summary: `Your ${dogProfile.breed} ${dogProfile.age} is showing excellent health indicators today. ${dogProfile.name} appears to be in great spirits with no concerning symptoms and is maintaining good eating habits.`,
-      recommendations: [
-        'Continue daily exercise routine',
-        'Maintain consistent feeding schedule',
-        'Keep up with regular grooming',
-        'Schedule routine vet check-up',
-      ],
-    });
-
-    setMockTodos();
-  };
+  }, [setMockData, setMockSummary, setMockTodos]);
 
   const getOverallHealthStatus = () => {
     return healthSummary?.overallStatus || 'Good';
