@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 interface HomeScreenProps {
@@ -11,12 +11,45 @@ export default function HomeScreen({}: HomeScreenProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [dragStartY, setDragStartY] = useState(0);
+  const [healthCheckCompleted, setHealthCheckCompleted] = useState(false);
   const [tasks, setTasks] = useState([
     { id: 1, text: 'Todo task', completed: false },
     { id: 2, text: 'Todo task', completed: false },
     { id: 3, text: 'Todo task', completed: false },
-    { id: 4, text: 'Health check', completed: true },
+    { id: 4, text: 'Health check', completed: false },
   ]);
+
+  // Check if health check is completed when component mounts
+  useEffect(() => {
+    const checkHealthCheckStatus = () => {
+      const completed = localStorage.getItem('healthCheckCompleted') === 'true';
+      const checkDate = localStorage.getItem('healthCheckDate');
+      const today = new Date().toDateString();
+
+      // Only show as completed if it was done today
+      const isCompletedToday = completed && checkDate === today;
+
+      setHealthCheckCompleted(isCompletedToday);
+
+      // Update the health check task completion status
+      setTasks(prevTasks =>
+        prevTasks.map(task =>
+          task.text === 'Health check'
+            ? { ...task, completed: isCompletedToday }
+            : task
+        )
+      );
+    };
+
+    checkHealthCheckStatus();
+
+    // Listen for changes in localStorage (in case of updates from other tabs)
+    window.addEventListener('storage', checkHealthCheckStatus);
+
+    return () => {
+      window.removeEventListener('storage', checkHealthCheckStatus);
+    };
+  }, []);
 
   const toggleTask = (id: number) => {
     setTasks(
@@ -232,16 +265,87 @@ export default function HomeScreen({}: HomeScreenProps) {
                 className='w-[28px] h-[28px]'
               />
               <h3 className='text-2xl font-bold text-[#383C44]'>Daily tasks</h3>
+              {tasks.every(task => task.completed) && (
+                <div className='flex items-center bg-[#15CF7E] text-white px-3 py-1 rounded-full ml-auto'>
+                  <svg
+                    className='w-4 h-4 mr-1'
+                    fill='currentColor'
+                    viewBox='0 0 24 24'
+                  >
+                    <path d='M20.285 2l-11.285 11.567-5.286-5.011-3.714 3.716 9 8.728 15-15.285z' />
+                  </svg>
+                  <span className='text-sm font-medium'>COMPLETED</span>
+                </div>
+              )}
             </div>
+
+            {/* Health Check Reviewed Section */}
+            {healthCheckCompleted && (
+              <div className='mb-4'>
+                <div
+                  className='bg-[#E8F5E8] rounded-2xl p-4 cursor-pointer hover:bg-[#D4F0D4] transition-colors'
+                  onClick={() => router.push('/health-check/summary')}
+                >
+                  <div className='flex items-start space-x-3'>
+                    <div className='w-6 h-6 rounded-full bg-[#15CF7E] text-white flex items-center justify-center flex-shrink-0 mt-1'>
+                      <svg
+                        className='w-4 h-4'
+                        fill='currentColor'
+                        viewBox='0 0 24 24'
+                      >
+                        <path d='M20.285 2l-11.285 11.567-5.286-5.011-3.714 3.716 9 8.728 15-15.285z' />
+                      </svg>
+                    </div>
+                    <div className='flex-1'>
+                      <h4 className='font-bold text-[#2D5A31] text-lg mb-1'>
+                        Health check reviewed
+                      </h4>
+                      <p className='text-[#5A8A5E] text-sm mb-3'>
+                        Some mild symptoms noted — we&apos;re keeping an eye on
+                        things.
+                      </p>
+                      <div className='flex items-center text-[#5A8A5E] text-sm'>
+                        <span>Open health summary</span>
+                        <svg
+                          className='w-4 h-4 ml-1'
+                          fill='currentColor'
+                          viewBox='0 0 24 24'
+                        >
+                          <path d='M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z' />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div className='space-y-3'>
               {tasks.map(task => (
                 <div
                   key={task.id}
-                  className='flex items-center space-x-3 bg-white p-4 rounded-2xl'
+                  className={`flex items-center space-x-3 bg-white p-4 rounded-2xl ${
+                    task.text === 'Health check'
+                      ? 'cursor-pointer hover:bg-gray-50 transition-colors'
+                      : ''
+                  }`}
+                  onClick={() => {
+                    if (task.text === 'Health check' && !healthCheckCompleted) {
+                      router.push('/health-check');
+                    }
+                  }}
                 >
                   <button
-                    onClick={() => toggleTask(task.id)}
+                    onClick={() => {
+                      if (
+                        task.text === 'Health check' &&
+                        !healthCheckCompleted
+                      ) {
+                        router.push('/health-check');
+                      } else if (task.text !== 'Health check') {
+                        toggleTask(task.id);
+                      }
+                    }}
                     className={`w-6 h-6 rounded border-2 flex items-center justify-center ${
                       task.completed
                         ? 'bg-green-500 border-green-500'
@@ -263,13 +367,7 @@ export default function HomeScreen({}: HomeScreenProps) {
                   >
                     {task.text}
                   </span>
-                  <button
-                    onClick={() => {
-                      if (task.text === 'Health check') {
-                        router.push('/health-check');
-                      }
-                    }}
-                  >
+                  <div className='flex items-center'>
                     <Image
                       src='/info.svg'
                       alt='info'
@@ -277,7 +375,7 @@ export default function HomeScreen({}: HomeScreenProps) {
                       height={20}
                       className='w-[20px] h-[20px]'
                     />
-                  </button>
+                  </div>
                 </div>
               ))}
             </div>

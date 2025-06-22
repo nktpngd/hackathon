@@ -23,14 +23,50 @@ export default function HealthCheckSummaryPage() {
   const [healthData, setHealthData] = useState<HealthCheckData | null>(null);
 
   useEffect(() => {
-    // In a real app, you'd get this data from props, URL params, or global state
-    // For now, using mock data based on the health check form
+    // Get health check data from localStorage if available
+    const savedHealthData = localStorage.getItem('healthCheckData');
+
+    if (savedHealthData) {
+      try {
+        const parsedData = JSON.parse(savedHealthData);
+        const formattedData: HealthCheckData = {
+          date: new Date(parsedData.date)
+            .toLocaleDateString('en-GB', {
+              day: '2-digit',
+              month: '2-digit',
+              year: '2-digit',
+            })
+            .replace(/\//g, '.'),
+          dogName: 'Pawchie', // This would come from user's dog profile
+          breed: 'Golden Retriever', // This would come from user's dog profile
+          gender: 'boy' as 'boy' | 'girl' | '', // This would come from user's dog profile
+          age: 'puppy', // This would come from user's dog profile
+          mood: parsedData.mood || 'Normal',
+          activity: parsedData.activity || 'As usual',
+          symptoms: parsedData.symptoms || ['No symptoms'],
+          behaviors: parsedData.behaviors || [],
+          feeding: parsedData.feeding || 'Good appetite',
+          description: parsedData.description || '',
+        };
+        setHealthData(formattedData);
+      } catch (error) {
+        console.error('Error parsing health check data:', error);
+        // Fall back to mock data if parsing fails
+        setMockData();
+      }
+    } else {
+      // Fall back to mock data if no saved data
+      setMockData();
+    }
+  }, []);
+
+  const setMockData = () => {
     const mockData: HealthCheckData = {
       date: '21.06.25',
-      dogName: 'Buddy', // This would come from user's dog profile
-      breed: 'Golden Retriever', // This would come from user's dog profile
-      gender: 'boy', // This would come from user's dog profile
-      age: 'puppy', // This would come from user's dog profile
+      dogName: 'Pawchie',
+      breed: 'Golden Retriever',
+      gender: 'boy',
+      age: 'puppy',
       mood: 'Happy',
       activity: 'Playful',
       symptoms: ['No symptoms'],
@@ -39,7 +75,7 @@ export default function HealthCheckSummaryPage() {
       description: 'Had a great day at the park',
     };
     setHealthData(mockData);
-  }, []);
+  };
 
   const getOverallHealthStatus = () => {
     if (!healthData) return 'Analyzing...';

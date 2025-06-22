@@ -80,14 +80,24 @@ export default function HealthCheckPage() {
 
   const handleSubmit = () => {
     // Handle form submission here
-    console.log({
+    const healthCheckData = {
       mood: selectedMood,
       activity: selectedActivity,
       symptoms: selectedSymptoms,
       behaviors: selectedBehaviors,
       feeding: selectedFeeding,
       description,
-    });
+      date: new Date().toISOString(),
+      completed: true,
+    };
+
+    console.log(healthCheckData);
+
+    // Save to localStorage to track completion
+    localStorage.setItem('healthCheckData', JSON.stringify(healthCheckData));
+    localStorage.setItem('healthCheckCompleted', 'true');
+    localStorage.setItem('healthCheckDate', new Date().toDateString());
+
     setIsSubmitting(true);
   };
 
