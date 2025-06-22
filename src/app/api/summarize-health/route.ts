@@ -31,12 +31,11 @@ export async function POST(request: NextRequest) {
       input: healthCheckInput,
     });
 
-    console.log(response);
-
     // Parse the structured JSON response
     let overallStatus = '';
     let summary = '';
     let recommendations: string[] = [];
+    let recommendedTodos: string[] = [];
 
     try {
       // The response has an output_text field containing the JSON string
@@ -61,6 +60,15 @@ export async function POST(request: NextRequest) {
             (rec: string) => typeof rec === 'string' && rec.length > 0
           );
         }
+
+        // Parse recommended todos
+        if (parsedResponse.toDoPlan && Array.isArray(parsedResponse.toDoPlan)) {
+          recommendedTodos = parsedResponse.toDoPlan
+            .map((item: any) => item.task)
+            .filter(
+              (task: string) => typeof task === 'string' && task.length > 0
+            );
+        }
       }
     } catch (parseError) {
       console.error('Error parsing JSON response:', parseError);
@@ -84,11 +92,18 @@ export async function POST(request: NextRequest) {
         'Schedule routine vet check-up',
       ];
     }
+    if (recommendedTodos.length === 0) {
+      recommendedTodos = [
+        'Take for a 30-minute walk',
+        'Practice basic commands',
+      ];
+    }
 
     return NextResponse.json({
       overallStatus,
       summary,
       recommendations,
+      recommendedTodos,
     });
   } catch (error) {
     console.error('Error summarizing health check:', error);

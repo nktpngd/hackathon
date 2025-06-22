@@ -28,6 +28,7 @@ export default function HealthCheckSummaryPage() {
   const [healthSummary, setHealthSummary] = useState<HealthSummary | null>(
     null
   );
+  const [recommendedTodos, setRecommendedTodos] = useState<string[]>([]);
 
   useEffect(() => {
     const loadHealthData = () => {
@@ -66,12 +67,23 @@ export default function HealthCheckSummaryPage() {
             try {
               const summary = JSON.parse(savedHealthSummary);
               setHealthSummary(summary);
+              // Extract recommended todos from health summary if available
+              if (
+                summary.recommendedTodos &&
+                Array.isArray(summary.recommendedTodos)
+              ) {
+                setRecommendedTodos(summary.recommendedTodos);
+              } else {
+                setMockTodos();
+              }
             } catch (error) {
               console.error('Error parsing health summary:', error);
               setMockSummary(displayData);
+              setMockTodos();
             }
           } else {
             setMockSummary(displayData);
+            setMockTodos();
           }
         } catch (error) {
           console.error('Error parsing health check data:', error);
@@ -86,6 +98,11 @@ export default function HealthCheckSummaryPage() {
 
     loadHealthData();
   }, []);
+
+  const setMockTodos = () => {
+    const mockTodos = ['Take for a 30-minute walk', 'Practice basic commands'];
+    setRecommendedTodos(mockTodos);
+  };
 
   const setMockSummary = (displayData: HealthCheckDisplayData) => {
     const mockSummary = {
@@ -130,6 +147,8 @@ export default function HealthCheckSummaryPage() {
         'Schedule routine vet check-up',
       ],
     });
+
+    setMockTodos();
   };
 
   const getOverallHealthStatus = () => {
@@ -142,6 +161,34 @@ export default function HealthCheckSummaryPage() {
 
   const getRecommendations = () => {
     return healthSummary?.recommendations || [];
+  };
+
+  const handleAddToMyDailyPlan = () => {
+    // Get existing tasks from localStorage
+    const existingTasksJson = localStorage.getItem('generatedTasks');
+    let existingTasks: string[] = [];
+
+    if (existingTasksJson) {
+      try {
+        existingTasks = JSON.parse(existingTasksJson);
+      } catch (error) {
+        console.error('Error parsing existing tasks:', error);
+      }
+    }
+
+    // Add recommended todos to existing tasks (avoid duplicates)
+    const newTasks = [...existingTasks];
+    recommendedTodos.forEach(todo => {
+      if (!newTasks.includes(todo)) {
+        newTasks.push(todo);
+      }
+    });
+
+    // Save updated tasks back to localStorage
+    localStorage.setItem('generatedTasks', JSON.stringify(newTasks));
+
+    // Navigate back to home page to show the updated tasks
+    router.push('/home');
   };
 
   // Get dog image based on age (reusing from ResultsScreen)
@@ -254,6 +301,39 @@ export default function HealthCheckSummaryPage() {
                 ))}
               </div>
             </div>
+          </div>
+
+          {/* Recommended Tasks Section */}
+          <div className='space-y-4 bg-[#E3FBEA] p-4 rounded-2xl'>
+            <h3 className='text-2xl font-bold text-[#383C44]'>
+              Recommended tasks to support {healthData.dogName}
+            </h3>
+            <p className='text-[#383C44] text-base'>
+              Based on today&apos;s health check, we&apos;ve selected a few
+              simple actions that can help improve your dog&apos;s well-being.
+              Add them to your to-do list with one tap.
+            </p>
+
+            <div className='space-y-3'>
+              {recommendedTodos.map((todo, index) => (
+                <div
+                  key={index}
+                  className='bg-white rounded-2xl p-4 flex items-center space-x-3'
+                >
+                  <span className='flex-1 text-gray-800'>{todo}</span>
+                  <div className='w-6 h-6 rounded-full  flex items-center justify-center'>
+                    <Image src='/info.svg' alt='info' width={16} height={16} />
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <button
+              onClick={handleAddToMyDailyPlan}
+              className='w-full bg-[#BFEDCC] hover:bg-green-600 text-[#61C27D] font-medium py-4 px-6 rounded-2xl transition-colors flex items-center justify-center space-x-2'
+            >
+              <span>+ Add to my daily plan</span>
+            </button>
           </div>
         </div>
       </div>

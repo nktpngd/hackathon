@@ -23,6 +23,7 @@ export interface HealthSummary {
   overallStatus: string;
   summary: string;
   recommendations: string[];
+  recommendedTodos?: string[];
 }
 
 export interface GeneratedPlan {
@@ -96,6 +97,10 @@ export async function summarizeHealthCheck(
         'Maintain consistent feeding schedule',
         'Keep up with regular grooming',
         'Schedule routine vet check-up',
+      ],
+      recommendedTodos: [
+        'Take for a 30-minute walk',
+        'Practice basic commands',
       ],
     };
   }
