@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import HealthCheckLoadingScreen from '@/components/HealthCheckLoadingScreen';
 
 export default function HealthCheckPage() {
   const router = useRouter();
@@ -12,6 +13,7 @@ export default function HealthCheckPage() {
   const [selectedBehaviors, setSelectedBehaviors] = useState<string[]>([]);
   const [selectedFeeding, setSelectedFeeding] = useState<string>('');
   const [description, setDescription] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const moodOptions = ['Angry', 'Stressed', 'Sad', 'Normal', 'Happy'];
   const activityOptions = [
@@ -86,7 +88,11 @@ export default function HealthCheckPage() {
       feeding: selectedFeeding,
       description,
     });
-    router.push('/home');
+    setIsSubmitting(true);
+  };
+
+  const handleLoadingComplete = () => {
+    setIsSubmitting(false);
   };
 
   const OptionButton = ({
@@ -114,6 +120,10 @@ export default function HealthCheckPage() {
       )}
     </button>
   );
+
+  if (isSubmitting) {
+    return <HealthCheckLoadingScreen onComplete={handleLoadingComplete} />;
+  }
 
   return (
     <div className='min-h-screen' style={{ backgroundColor: '#F3F3F3' }}>
