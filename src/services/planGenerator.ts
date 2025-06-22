@@ -6,6 +6,25 @@ export interface DogProfile {
   behaviors: string[];
 }
 
+export interface HealthCheckData {
+  mood: string;
+  activity: string;
+  symptoms: string[];
+  behaviors: string[];
+  feeding: string;
+  description: string;
+  dogName: string;
+  breed: string;
+  gender: 'boy' | 'girl' | '';
+  age: string;
+}
+
+export interface HealthSummary {
+  overallStatus: string;
+  summary: string;
+  recommendations: string[];
+}
+
 export interface GeneratedPlan {
   summary: string;
   goal: string;
@@ -42,6 +61,41 @@ export async function generatePersonalizedPlan(
         'Scent games / mental tasks',
         'Recommended course: "Sit, Stay, Come"',
         'Behavioral training sessions',
+      ],
+    };
+  }
+}
+
+export async function summarizeHealthCheck(
+  healthData: HealthCheckData
+): Promise<HealthSummary> {
+  try {
+    const response = await fetch('/api/summarize-health', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(healthData),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to summarize health check');
+    }
+
+    const summary: HealthSummary = await response.json();
+    return summary;
+  } catch (error) {
+    console.error('Error summarizing health check:', error);
+
+    // Fallback to default summary in case of API failure
+    return {
+      overallStatus: 'Good',
+      summary: `Your ${healthData.breed} ${healthData.age} is showing good overall health indicators based on today's assessment. Continue monitoring their daily activities and habits.`,
+      recommendations: [
+        'Continue daily exercise routine',
+        'Maintain consistent feeding schedule',
+        'Keep up with regular grooming',
+        'Schedule routine vet check-up',
       ],
     };
   }

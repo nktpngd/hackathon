@@ -4,15 +4,33 @@ import Image from 'next/image';
 
 interface HealthCheckLoadingScreenProps {
   onComplete: () => void;
+  autoComplete?: boolean;
 }
 
 export default function HealthCheckLoadingScreen({
   onComplete,
+  autoComplete = true,
 }: HealthCheckLoadingScreenProps) {
   const [progress, setProgress] = useState(0);
   const router = useRouter();
 
   useEffect(() => {
+    if (!autoComplete) {
+      // If not auto-completing, just show a slow steady progress
+      const interval = setInterval(() => {
+        setProgress(prev => {
+          if (prev >= 90) {
+            // Stop at 90% and wait for external completion
+            return 90;
+          }
+          return prev + 5;
+        });
+      }, 300);
+
+      return () => clearInterval(interval);
+    }
+
+    // Original auto-complete behavior
     const interval = setInterval(() => {
       setProgress(prev => {
         if (prev >= 100) {
@@ -28,7 +46,7 @@ export default function HealthCheckLoadingScreen({
     }, 200);
 
     return () => clearInterval(interval);
-  }, [onComplete, router]);
+  }, [onComplete, router, autoComplete]);
 
   return (
     <div className='min-h-screen bg-white flex flex-col'>

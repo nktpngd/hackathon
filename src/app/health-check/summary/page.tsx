@@ -3,8 +3,10 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { HealthSummary } from '@/services/planGenerator';
+import { getDogProfile } from '@/utils/dogProfile';
 
-interface HealthCheckData {
+interface HealthCheckDisplayData {
   date: string;
   dogName: string;
   breed: string;
@@ -20,53 +22,94 @@ interface HealthCheckData {
 
 export default function HealthCheckSummaryPage() {
   const router = useRouter();
-  const [healthData, setHealthData] = useState<HealthCheckData | null>(null);
+  const [healthData, setHealthData] = useState<HealthCheckDisplayData | null>(
+    null
+  );
+  const [healthSummary, setHealthSummary] = useState<HealthSummary | null>(
+    null
+  );
 
   useEffect(() => {
-    // Get health check data from localStorage if available
-    const savedHealthData = localStorage.getItem('healthCheckData');
+    const loadHealthData = () => {
+      const dogProfile = getDogProfile();
 
-    if (savedHealthData) {
-      try {
-        const parsedData = JSON.parse(savedHealthData);
-        const formattedData: HealthCheckData = {
-          date: new Date(parsedData.date)
-            .toLocaleDateString('en-GB', {
-              day: '2-digit',
-              month: '2-digit',
-              year: '2-digit',
-            })
-            .replace(/\//g, '.'),
-          dogName: 'Pawchie', // This would come from user's dog profile
-          breed: 'Golden Retriever', // This would come from user's dog profile
-          gender: 'boy' as 'boy' | 'girl' | '', // This would come from user's dog profile
-          age: 'puppy', // This would come from user's dog profile
-          mood: parsedData.mood || 'Normal',
-          activity: parsedData.activity || 'As usual',
-          symptoms: parsedData.symptoms || ['No symptoms'],
-          behaviors: parsedData.behaviors || [],
-          feeding: parsedData.feeding || 'Good appetite',
-          description: parsedData.description || '',
-        };
-        setHealthData(formattedData);
-      } catch (error) {
-        console.error('Error parsing health check data:', error);
-        // Fall back to mock data if parsing fails
+      // Get health check data from localStorage if available
+      const savedHealthData = localStorage.getItem('healthCheckData');
+      const savedHealthSummary = localStorage.getItem('healthSummary');
+
+      if (savedHealthData) {
+        try {
+          const parsedData = JSON.parse(savedHealthData);
+          const displayData: HealthCheckDisplayData = {
+            date: new Date(parsedData.date)
+              .toLocaleDateString('en-GB', {
+                day: '2-digit',
+                month: '2-digit',
+                year: '2-digit',
+              })
+              .replace(/\//g, '.'),
+            dogName: dogProfile.name,
+            breed: dogProfile.breed,
+            gender: dogProfile.gender,
+            age: dogProfile.age,
+            mood: parsedData.mood || 'Normal',
+            activity: parsedData.activity || 'As usual',
+            symptoms: parsedData.symptoms || ['No symptoms'],
+            behaviors: parsedData.behaviors || [],
+            feeding: parsedData.feeding || 'Good appetite',
+            description: parsedData.description || '',
+          };
+          setHealthData(displayData);
+
+          // Get health summary from localStorage (should be saved by the loading screen)
+          if (savedHealthSummary) {
+            try {
+              const summary = JSON.parse(savedHealthSummary);
+              setHealthSummary(summary);
+            } catch (error) {
+              console.error('Error parsing health summary:', error);
+              setMockSummary(displayData);
+            }
+          } else {
+            setMockSummary(displayData);
+          }
+        } catch (error) {
+          console.error('Error parsing health check data:', error);
+          // Fall back to mock data if parsing fails
+          setMockData();
+        }
+      } else {
+        // Fall back to mock data if no saved data
         setMockData();
       }
-    } else {
-      // Fall back to mock data if no saved data
-      setMockData();
-    }
+    };
+
+    loadHealthData();
   }, []);
 
+  const setMockSummary = (displayData: HealthCheckDisplayData) => {
+    const mockSummary = {
+      overallStatus: 'Good',
+      summary: `Your ${displayData.breed} ${displayData.age} is showing good overall health indicators based on today's assessment.`,
+      recommendations: [
+        'Continue daily exercise routine',
+        'Maintain consistent feeding schedule',
+        'Keep up with regular grooming',
+        'Schedule routine vet check-up',
+      ],
+    };
+    setHealthSummary(mockSummary);
+  };
+
   const setMockData = () => {
-    const mockData: HealthCheckData = {
+    const dogProfile = getDogProfile();
+
+    const mockData: HealthCheckDisplayData = {
       date: '21.06.25',
-      dogName: 'Pawchie',
-      breed: 'Golden Retriever',
-      gender: 'boy',
-      age: 'puppy',
+      dogName: dogProfile.name,
+      breed: dogProfile.breed,
+      gender: dogProfile.gender,
+      age: dogProfile.age,
       mood: 'Happy',
       activity: 'Playful',
       symptoms: ['No symptoms'],
@@ -75,122 +118,30 @@ export default function HealthCheckSummaryPage() {
       description: 'Had a great day at the park',
     };
     setHealthData(mockData);
+
+    // Set mock health summary
+    setHealthSummary({
+      overallStatus: 'Excellent',
+      summary: `Your ${dogProfile.breed} ${dogProfile.age} is showing excellent health indicators today. ${dogProfile.name} appears to be in great spirits with no concerning symptoms and is maintaining good eating habits.`,
+      recommendations: [
+        'Continue daily exercise routine',
+        'Maintain consistent feeding schedule',
+        'Keep up with regular grooming',
+        'Schedule routine vet check-up',
+      ],
+    });
   };
 
   const getOverallHealthStatus = () => {
-    if (!healthData) return 'Analyzing...';
-
-    const hasSymptoms =
-      healthData.symptoms.length > 0 &&
-      !healthData.symptoms.includes('No symptoms');
-    const hasBehaviorIssues = healthData.behaviors.length > 0;
-    const hasGoodFeeding =
-      healthData.feeding === 'Good appetite' ||
-      healthData.feeding === 'Glutton';
-    const hasPositiveMood =
-      healthData.mood === 'Happy' || healthData.mood === 'Normal';
-
-    if (
-      !hasSymptoms &&
-      !hasBehaviorIssues &&
-      hasGoodFeeding &&
-      hasPositiveMood
-    ) {
-      return 'Excellent';
-    } else if (hasSymptoms || hasBehaviorIssues) {
-      return 'Needs attention';
-    } else {
-      return 'Good';
-    }
+    return healthSummary?.overallStatus || 'Good';
   };
 
   const getHealthSummary = () => {
-    if (!healthData) return '';
-
-    const status = getOverallHealthStatus();
-    const dogInfo = `${healthData.breed} ${healthData.age}`;
-
-    if (status === 'Excellent') {
-      return `Your ${dogInfo} is showing excellent health indicators today. ${healthData.dogName} appears to be in great spirits with no concerning symptoms and is maintaining good eating habits.`;
-    } else if (status === 'Needs attention') {
-      const concerns = [];
-      if (
-        healthData.symptoms.length > 0 &&
-        !healthData.symptoms.includes('No symptoms')
-      ) {
-        concerns.push('showing some symptoms that should be monitored');
-      }
-      if (healthData.behaviors.length > 0) {
-        concerns.push('exhibiting behavioral changes');
-      }
-      return `Your ${dogInfo} is ${concerns.join(' and ')}. While these may be temporary, it's important to keep tracking these patterns and consult with a veterinarian if they persist.`;
-    } else {
-      return `Your ${dogInfo} is showing good overall health indicators. Continue monitoring ${healthData.dogName}'s daily activities and habits to maintain this positive trend.`;
-    }
+    return healthSummary?.summary || '';
   };
 
   const getRecommendations = () => {
-    if (!healthData) return [];
-
-    const recommendations = [];
-
-    // Based on symptoms
-    if (
-      healthData.symptoms.includes('Coughing') ||
-      healthData.symptoms.includes('Sneezing')
-    ) {
-      recommendations.push(
-        'Monitor respiratory symptoms and ensure good air quality'
-      );
-    }
-    if (
-      healthData.symptoms.includes('Vomiting') ||
-      healthData.symptoms.includes('Diarrhea')
-    ) {
-      recommendations.push(
-        'Maintain hydration and consider bland diet if symptoms persist'
-      );
-    }
-    if (healthData.symptoms.includes('Excessive thirst')) {
-      recommendations.push(
-        'Ensure fresh water availability and monitor water intake'
-      );
-    }
-
-    // Based on behaviors
-    if (healthData.behaviors.includes('Aggression')) {
-      recommendations.push(
-        'Practice calm training exercises and avoid stressful situations'
-      );
-    }
-    if (
-      healthData.behaviors.includes('Pacing') ||
-      healthData.behaviors.includes('Trembling')
-    ) {
-      recommendations.push(
-        'Create a calm environment and consider anxiety-reducing activities'
-      );
-    }
-
-    // Based on feeding
-    if (
-      healthData.feeding === 'No appetite' ||
-      healthData.feeding === 'Eats nothing'
-    ) {
-      recommendations.push(
-        "Try offering small, appetizing meals and consult vet if appetite doesn't improve"
-      );
-    }
-
-    // Default recommendations if all is well
-    if (recommendations.length === 0) {
-      recommendations.push('Continue daily exercise routine');
-      recommendations.push('Maintain consistent feeding schedule');
-      recommendations.push('Keep up with regular grooming');
-      recommendations.push('Schedule routine vet check-up');
-    }
-
-    return recommendations;
+    return healthSummary?.recommendations || [];
   };
 
   // Get dog image based on age (reusing from ResultsScreen)
@@ -258,7 +209,7 @@ export default function HealthCheckSummaryPage() {
             </div>
             <div className='flex-1'>
               <h2 className='font-bold text-base text-[#383C44] mb-1'>
-                {healthData.dogName} - [{getOverallHealthStatus()}]
+                {healthData.dogName} - {getOverallHealthStatus()}
               </h2>
               <div className='flex flex-wrap gap-2 text-sm'>
                 <span className='text-[#1998CD] font-medium bg-[#E1F2F9] py-1 px-2 rounded-lg'>

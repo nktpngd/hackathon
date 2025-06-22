@@ -15,10 +15,7 @@ function ResultsContent() {
   const behaviors = searchParams.get('behaviors')?.split(',') || [];
 
   const handleStartPlan = () => {
-    const params = new URLSearchParams({
-      name: dogName,
-    });
-    router.push(`/home?${params.toString()}`);
+    router.push('/home');
   };
 
   return (

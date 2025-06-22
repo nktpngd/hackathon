@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import HealthCheckLoadingScreen from '@/components/HealthCheckLoadingScreen';
+import HealthCheckLoadingScreenWithAPI from '@/components/HealthCheckLoadingScreenWithAPI';
 
 export default function HealthCheckPage() {
   const router = useRouter();
@@ -101,10 +101,6 @@ export default function HealthCheckPage() {
     setIsSubmitting(true);
   };
 
-  const handleLoadingComplete = () => {
-    setIsSubmitting(false);
-  };
-
   const OptionButton = ({
     option,
     isSelected,
@@ -132,7 +128,17 @@ export default function HealthCheckPage() {
   );
 
   if (isSubmitting) {
-    return <HealthCheckLoadingScreen onComplete={handleLoadingComplete} />;
+    const healthCheckData = {
+      mood: selectedMood,
+      activity: selectedActivity,
+      symptoms: selectedSymptoms,
+      behaviors: selectedBehaviors,
+      feeding: selectedFeeding,
+      description,
+    };
+    return (
+      <HealthCheckLoadingScreenWithAPI healthCheckData={healthCheckData} />
+    );
   }
 
   return (

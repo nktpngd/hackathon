@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { generatePersonalizedPlan } from '../services/planGenerator';
+import { setDogProfile } from '@/utils/dogProfile';
 
 interface LoadingScreenProps {
   dogName: string;
@@ -27,6 +28,14 @@ export default function LoadingScreen({
   useEffect(() => {
     const generatePlan = async () => {
       try {
+        // Save the user-entered dog data to the shared dog profile immediately
+        setDogProfile({
+          name: dogName,
+          breed,
+          gender,
+          age: age as 'puppy' | 'adolescent' | 'adult' | 'senior',
+        });
+
         // Start with initial progress
         setProgress(10);
 

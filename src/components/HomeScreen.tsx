@@ -1,17 +1,15 @@
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { getDogProfile, DogProfile } from '@/utils/dogProfile';
 
-interface HomeScreenProps {
-  dogName: string;
-}
-
-export default function HomeScreen({}: HomeScreenProps) {
+export default function HomeScreen() {
   const router = useRouter();
   const [isExpanded, setIsExpanded] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [dragStartY, setDragStartY] = useState(0);
   const [healthCheckCompleted, setHealthCheckCompleted] = useState(false);
+  const [dogProfile, setDogProfile] = useState<DogProfile | null>(null);
   const [tasks, setTasks] = useState([
     { id: 1, text: 'Health check', completed: false },
   ]);
@@ -19,6 +17,10 @@ export default function HomeScreen({}: HomeScreenProps) {
   // Load generated tasks and health check status when component mounts
   useEffect(() => {
     const loadTasksAndHealthCheck = () => {
+      // Load dog profile
+      const profile = getDogProfile();
+      setDogProfile(profile);
+
       // Load generated tasks from localStorage
       const generatedTasksJson = localStorage.getItem('generatedTasks');
       let generatedTasks: string[] = [];
@@ -213,7 +215,7 @@ export default function HomeScreen({}: HomeScreenProps) {
         className={`px-6 py-6 flex-shrink-0 ${!isExpanded ? 'cursor-pointer' : ''}`}
         onTouchStart={handleHeaderTouchStart}
         onTouchMove={handleHeaderTouchMove}
-        onTouchEnd={handleDragEnd}
+        onTouchEnd={handleTouchEnd}
         onClick={() => {
           if (!isExpanded) {
             setIsExpanded(true);
@@ -233,7 +235,9 @@ export default function HomeScreen({}: HomeScreenProps) {
               <div className='flex flex-col'>
                 <p className='text-xs mt-1'>Hello, my little champion,</p>
                 <div className='flex items-center space-x-2'>
-                  <h1 className='text-2xl font-bold'>Pawchie</h1>
+                  <h1 className='text-2xl font-bold'>
+                    {dogProfile?.name || 'Pawchie'}
+                  </h1>
                   <svg
                     className='w-[15px] h-[15px]'
                     fill='currentColor'

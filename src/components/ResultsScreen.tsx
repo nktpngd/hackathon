@@ -4,6 +4,7 @@ import {
   generatePersonalizedPlan,
   type GeneratedPlan,
 } from '../services/planGenerator';
+import { setDogProfile } from '@/utils/dogProfile';
 
 interface ResultsScreenProps {
   dogName: string;
@@ -30,6 +31,17 @@ export default function ResultsScreen({
 
   // Memoize behaviors array to prevent unnecessary re-renders
   const stableBehaviors = useMemo(() => behaviors, [behaviors.join(',')]);
+
+  // Save dog profile data when component mounts
+  useEffect(() => {
+    // Save the user-entered dog data to the shared dog profile
+    setDogProfile({
+      name: dogName,
+      breed,
+      gender,
+      age: age as 'puppy' | 'adolescent' | 'adult' | 'senior',
+    });
+  }, [dogName, breed, gender, age]);
 
   // Get age display text
   const getAgeDisplay = (age: string) => {
