@@ -18,8 +18,8 @@ export default function HealthCheckLoadingScreen({
         if (prev >= 100) {
           clearInterval(interval);
           setTimeout(() => {
-            // Navigate to home page after successful submission
-            router.push('/home');
+            // Navigate to health check summary page after successful submission
+            router.push('/health-check/summary');
             onComplete();
           }, 1000);
           return 100;
