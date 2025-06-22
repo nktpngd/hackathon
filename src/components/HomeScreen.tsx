@@ -123,18 +123,20 @@ export default function HomeScreen({}: HomeScreenProps) {
     if (!isDragging) return;
 
     const deltaY = dragStartY - clientY;
-    const threshold = 50; // minimum drag distance to trigger expand/collapse
+    const threshold = 30; // reduced threshold for easier interaction
 
     if (Math.abs(deltaY) > threshold) {
       if (deltaY > 0) {
         // Dragging up - expand
         if (!isExpanded) {
           setIsExpanded(true);
+          setIsDragging(false); // Stop dragging after state change
         }
       } else {
         // Dragging down - collapse
         if (isExpanded) {
           setIsExpanded(false);
+          setIsDragging(false); // Stop dragging after state change
         }
       }
     }
@@ -145,17 +147,8 @@ export default function HomeScreen({}: HomeScreenProps) {
     setDragStartY(0);
   };
 
-  // Mouse events
+  // Mouse events - only for drag handle
   const handleMouseDown = (e: React.MouseEvent) => {
-    // Don't start drag on interactive elements
-    const target = e.target as HTMLElement;
-    if (
-      target.closest('button') ||
-      target.closest('input') ||
-      target.closest('svg')
-    ) {
-      return;
-    }
     e.preventDefault();
     handleDragStart(e.clientY);
   };
@@ -168,10 +161,27 @@ export default function HomeScreen({}: HomeScreenProps) {
     handleDragEnd();
   };
 
-  // Touch events
+  // Touch events - only for drag handle
   const handleTouchStart = (e: React.TouchEvent) => {
-    // Don't start drag on interactive elements
+    e.preventDefault();
+    handleDragStart(e.touches[0].clientY);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    e.preventDefault();
+    handleDragMove(e.touches[0].clientY);
+  };
+
+  const handleTouchEnd = () => {
+    handleDragEnd();
+  };
+
+  // Header area touch events (for expanding when collapsed)
+  const handleHeaderTouchStart = (e: React.TouchEvent) => {
+    if (isExpanded) return; // Only allow expand gesture when collapsed
+
     const target = e.target as HTMLElement;
+    // Don't start drag on interactive elements
     if (
       target.closest('button') ||
       target.closest('input') ||
@@ -179,16 +189,13 @@ export default function HomeScreen({}: HomeScreenProps) {
     ) {
       return;
     }
-    e.preventDefault();
     handleDragStart(e.touches[0].clientY);
   };
 
-  const handleTouchMove = (e: React.TouchEvent) => {
+  const handleHeaderTouchMove = (e: React.TouchEvent) => {
+    if (isExpanded || !isDragging) return;
+    e.preventDefault(); // Prevent scrolling during header drag
     handleDragMove(e.touches[0].clientY);
-  };
-
-  const handleTouchEnd = () => {
-    handleDragEnd();
   };
 
   const weekDates = [17, 18, 19, 20, 21, 22, 23];
@@ -202,7 +209,17 @@ export default function HomeScreen({}: HomeScreenProps) {
       onMouseLeave={isDragging ? handleMouseUp : undefined}
     >
       {/* Header */}
-      <div className='px-6 py-6 flex-shrink-0'>
+      <div
+        className={`px-6 py-6 flex-shrink-0 ${!isExpanded ? 'cursor-pointer' : ''}`}
+        onTouchStart={handleHeaderTouchStart}
+        onTouchMove={handleHeaderTouchMove}
+        onTouchEnd={handleDragEnd}
+        onClick={() => {
+          if (!isExpanded) {
+            setIsExpanded(true);
+          }
+        }}
+      >
         <div className='flex items-center justify-between mb-6'>
           <div className='flex items-center space-x-2'>
             <div className='rounded-2xl flex gap-[7px] items-center justify-center'>
@@ -255,28 +272,29 @@ export default function HomeScreen({}: HomeScreenProps) {
       >
         {/* Drag Handle */}
         <div
-          className={`absolute top-2 left-1/2 transform -translate-x-1/2 z-10 w-12 h-1 rounded-full transition-all duration-300 cursor-grab select-none ${
-            isDragging
-              ? 'bg-gray-600 cursor-grabbing'
-              : 'bg-gray-400 hover:bg-gray-500'
+          className={`absolute top-0 left-1/2 transform -translate-x-1/2 z-10 w-20 h-8 flex items-center justify-center transition-all duration-300 cursor-pointer select-none ${
+            isDragging ? 'cursor-grabbing' : 'cursor-pointer hover:bg-gray-100'
           }`}
           onMouseDown={handleMouseDown}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
+          onClick={() => setIsExpanded(!isExpanded)}
           aria-label={
             isExpanded
-              ? 'Drag down to collapse content'
-              : 'Drag up to expand content'
+              ? 'Tap or drag down to collapse content'
+              : 'Tap or drag up to expand content'
           }
-        />
+        >
+          <div className='w-12 h-1 bg-gray-400 rounded-full' />
+        </div>
 
         <div
-          className={`px-6 space-y-4 transition-all duration-500 ease-out cursor-grab select-none ${
+          className={`px-6 space-y-4 transition-all duration-500 ease-out ${
             isExpanded
               ? 'h-full overflow-y-auto pb-6'
               : 'overflow-hidden h-full'
-          } ${isDragging ? 'cursor-grabbing' : ''}`}
+          }`}
           style={{
             paddingTop: '2rem',
             paddingBottom: isExpanded ? '2rem' : '1.5rem',
@@ -284,10 +302,6 @@ export default function HomeScreen({}: HomeScreenProps) {
             transform: isExpanded ? 'translateY(0)' : 'translateY(10px)',
             transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
           }}
-          onMouseDown={handleMouseDown}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
         >
           {/* Calendar */}
           <div className='rounded-2xl p-2'>
