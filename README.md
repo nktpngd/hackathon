@@ -10,6 +10,7 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 - **Prettier** - Code formatting with consistent style
 - **Tailwind CSS v4** - Latest utility-first CSS framework
 - **Turbopack** - Ultra-fast bundler for development
+- **ChatGPT Integration** - AI-powered personalized dog training plans
 
 ## 🛠️ Development Tools
 
@@ -36,6 +37,14 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 - Optimized for Next.js App Router
 
 ## 🏃‍♂️ Getting Started
+
+### Environment Setup:
+
+Create a `.env.local` file in the root directory and add your OpenAI API key:
+
+```bash
+OPENAI_API_KEY=your_openai_api_key_here
+```
 
 ### Install dependencies:
 
@@ -66,19 +75,27 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 ```
 ├── src/
-│   └── app/
-│       ├── globals.css      # Global styles with Tailwind
-│       ├── layout.tsx       # Root layout component
-│       ├── page.tsx         # Home page component
-│       └── favicon.ico      # App favicon
-├── public/                  # Static assets
-├── .prettierrc             # Prettier configuration
-├── .prettierignore         # Prettier ignore patterns
-├── eslint.config.mjs       # ESLint configuration
-├── postcss.config.mjs      # PostCSS configuration for Tailwind
-├── tailwind.config.ts      # Tailwind CSS configuration
-├── tsconfig.json           # TypeScript configuration
-└── next.config.ts          # Next.js configuration
+│   ├── app/
+│   │   ├── api/
+│   │   │   └── generate-plan/   # ChatGPT API endpoint
+│   │   │       └── route.ts
+│   │   ├── globals.css          # Global styles with Tailwind
+│   │   ├── layout.tsx           # Root layout component
+│   │   ├── page.tsx             # Home page component
+│   │   └── favicon.ico          # App favicon
+│   ├── components/              # React components
+│   │   └── ResultsScreen.tsx    # Results page with AI integration
+│   └── services/                # API services
+│       └── planGenerator.ts     # ChatGPT integration service
+├── public/                      # Static assets
+├── .env.local                   # Environment variables (create this)
+├── .prettierrc                  # Prettier configuration
+├── .prettierignore              # Prettier ignore patterns
+├── eslint.config.mjs            # ESLint configuration
+├── postcss.config.mjs           # PostCSS configuration for Tailwind
+├── tailwind.config.ts           # Tailwind CSS configuration
+├── tsconfig.json                # TypeScript configuration
+└── next.config.ts               # Next.js configuration
 ```
 
 ## 🎨 Styling
@@ -102,6 +119,30 @@ Standardized formatting rules for consistent code style across the project.
 ### Tailwind CSS (`postcss.config.mjs`)
 
 Uses the latest Tailwind CSS v4 PostCSS plugin for optimal performance.
+
+## 🤖 ChatGPT Integration
+
+This application integrates with OpenAI's ChatGPT API to generate personalized dog training plans based on quiz results.
+
+### How it works:
+
+1. **Data Collection**: User completes a quiz providing dog information (name, breed, gender, age, behaviors)
+2. **API Call**: The quiz results are sent to `/api/generate-plan` endpoint
+3. **AI Processing**: ChatGPT processes the data using prompt ID `pmpt_6856c3f4c8d08194937cb0e8374fb8010b07e412fbc88926`
+4. **Personalized Response**: Returns customized summary, goal, and training tasks
+5. **Fallback System**: If API fails, fallback to predefined content based on behaviors
+
+### Key Components:
+
+- **API Route**: `src/app/api/generate-plan/route.ts` - Handles ChatGPT API calls
+- **Service Layer**: `src/services/planGenerator.ts` - Manages API communication and error handling
+- **UI Integration**: `src/components/ResultsScreen.tsx` - Displays AI-generated content with loading states
+
+### Environment Variables:
+
+```bash
+OPENAI_API_KEY=your_openai_api_key_here
+```
 
 ## 📖 Learn More
 

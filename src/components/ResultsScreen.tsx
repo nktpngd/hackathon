@@ -1,4 +1,9 @@
 import Image from 'next/image';
+import { useState, useEffect, useMemo, useRef } from 'react';
+import {
+  generatePersonalizedPlan,
+  type GeneratedPlan,
+} from '../services/planGenerator';
 
 interface ResultsScreenProps {
   dogName: string;
@@ -17,6 +22,15 @@ export default function ResultsScreen({
   behaviors,
   onStartPlan,
 }: ResultsScreenProps) {
+  const [generatedPlan, setGeneratedPlan] = useState<GeneratedPlan | null>(
+    null
+  );
+  const [isLoading, setIsLoading] = useState(true);
+  const hasLoadedRef = useRef(false);
+
+  // Memoize behaviors array to prevent unnecessary re-renders
+  const stableBehaviors = useMemo(() => behaviors, [behaviors.join(',')]);
+
   // Get age display text
   const getAgeDisplay = (age: string) => {
     switch (age) {
@@ -32,6 +46,53 @@ export default function ResultsScreen({
         return age;
     }
   };
+
+  // Load personalized plan on component mount
+  useEffect(() => {
+    // Prevent multiple calls if already loaded
+    if (hasLoadedRef.current) return;
+
+    const loadPlan = async () => {
+      hasLoadedRef.current = true;
+      setIsLoading(true);
+      try {
+        const plan = await generatePersonalizedPlan({
+          dogName,
+          breed,
+          gender,
+          age,
+          behaviors: stableBehaviors,
+        });
+        setGeneratedPlan(plan);
+
+        // Save the generated tasks to localStorage for use in HomeScreen
+        const tasks = plan?.tasks || [
+          'Daily walks of 45 minutes',
+          'Scent games / mental tasks',
+          'Recommended course: "Sit, Stay, Come"',
+          'Behavioral training sessions',
+        ];
+        localStorage.setItem('generatedTasks', JSON.stringify(tasks));
+      } catch (error) {
+        console.error('Failed to load personalized plan:', error);
+        // Fallback plan will be handled by the service
+        hasLoadedRef.current = false; // Reset on error to allow retry
+
+        // Save fallback tasks to localStorage
+        const fallbackTasks = [
+          'Daily walks of 45 minutes',
+          'Scent games / mental tasks',
+          'Recommended course: "Sit, Stay, Come"',
+          'Behavioral training sessions',
+        ];
+        localStorage.setItem('generatedTasks', JSON.stringify(fallbackTasks));
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadPlan();
+  }, [dogName, breed, gender, age, stableBehaviors]);
 
   // Get dog image based on age
   const getDogImage = (age: string) => {
@@ -49,8 +110,13 @@ export default function ResultsScreen({
     }
   };
 
-  // Generate summary based on behaviors
+  // Generate summary from API or fallback
   const generateSummary = () => {
+    if (generatedPlan?.summary) {
+      return generatedPlan.summary;
+    }
+
+    // Fallback logic
     if (behaviors.includes('aggression')) {
       return `Your ${breed} ${age} is exhibiting early signs of aggression towards people or other animals. While puppies can sometimes display challenging behaviors as they adjust to new environments, it's important to address aggression early for proper social development and safety`;
     }
@@ -76,8 +142,13 @@ export default function ResultsScreen({
     return `Your ${breed} ${age} is showing great potential for training. Every dog can benefit from structured training to enhance their natural abilities and strengthen your bond together.`;
   };
 
-  // Generate goal based on behaviors
+  // Generate goal from API or fallback
   const generateGoal = () => {
+    if (generatedPlan?.goal) {
+      return generatedPlan.goal;
+    }
+
+    // Fallback logic
     if (behaviors.includes('aggression')) {
       return 'Promote positive socialization experiences and reduce aggressive behaviors through consistent training and early intervention.';
     }
@@ -153,15 +224,36 @@ export default function ResultsScreen({
           {/* Summary Section */}
           <div className='space-y-3'>
             <h3 className='text-2xl font-bold text-gray-800'>Summary</h3>
-            <p className='text-gray-600 leading-relaxed'>{generateSummary()}</p>
+            {isLoading ? (
+              <div className='space-y-2 animate-pulse'>
+                <div className='h-4 bg-gray-300 rounded w-full'></div>
+                <div className='h-4 bg-gray-300 rounded w-5/6'></div>
+                <div className='h-4 bg-gray-300 rounded w-4/5'></div>
+              </div>
+            ) : (
+              <p className='text-gray-600 leading-relaxed'>
+                {generateSummary()}
+              </p>
+            )}
           </div>
 
           {/* Goal Section */}
           <div className='space-y-3'>
             <h3 className='text-2xl font-bold text-gray-800'>Goal</h3>
-            <div className='bg-[#FFEDB4] rounded-2xl p-4'>
-              <p className='text-[#B88933] leading-relaxed'>{generateGoal()}</p>
-            </div>
+            {isLoading ? (
+              <div className='bg-[#FFEDB4] rounded-2xl p-4 animate-pulse'>
+                <div className='space-y-2'>
+                  <div className='h-4 bg-[#D4B366] rounded w-full'></div>
+                  <div className='h-4 bg-[#D4B366] rounded w-3/4'></div>
+                </div>
+              </div>
+            ) : (
+              <div className='bg-[#FFEDB4] rounded-2xl p-4'>
+                <p className='text-[#B88933] leading-relaxed'>
+                  {generateGoal()}
+                </p>
+              </div>
+            )}
           </div>
 
           {/* What's Included Section */}
@@ -170,56 +262,46 @@ export default function ResultsScreen({
               What&apos;s included in the plan
             </h3>
 
-            <div className='relative'>
-              {/* Connecting line */}
-              <div className='absolute left-4 top-8 bottom-8 w-0.5 bg-gray-300 z-0'></div>
-
-              <div className='space-y-4 relative z-10'>
-                <div className='flex items-center space-x-4'>
-                  <div className='w-8 h-8 rounded-full bg-white border-2 border-gray-300 flex items-center justify-center flex-shrink-0 relative z-10'>
-                    <span className='text-sm font-medium text-gray-600'>1</span>
-                  </div>
-                  <div className='flex-1 bg-[#F3F3F3] rounded-xl px-4 py-3'>
-                    <p className='text-gray-800 font-medium'>
-                      Daily walks of 45 minutes
-                    </p>
-                  </div>
+            {isLoading ? (
+              <div className='space-y-4'>
+                <div className='bg-[#F3F3F3] rounded-xl px-4 py-3 animate-pulse'>
+                  <div className='h-4 bg-gray-300 rounded w-3/4'></div>
                 </div>
-
-                <div className='flex items-center space-x-4'>
-                  <div className='w-8 h-8 rounded-full bg-white border-2 border-gray-300 flex items-center justify-center flex-shrink-0 relative z-10'>
-                    <span className='text-sm font-medium text-gray-600'>2</span>
-                  </div>
-                  <div className='flex-1 bg-[#F3F3F3] rounded-xl px-4 py-3'>
-                    <p className='text-gray-800 font-medium'>
-                      Scent games / mental tasks
-                    </p>
-                  </div>
+                <div className='bg-[#F3F3F3] rounded-xl px-4 py-3 animate-pulse'>
+                  <div className='h-4 bg-gray-300 rounded w-2/3'></div>
                 </div>
-
-                <div className='flex items-center space-x-4'>
-                  <div className='w-8 h-8 rounded-full bg-white border-2 border-gray-300 flex items-center justify-center flex-shrink-0 relative z-10'>
-                    <span className='text-sm font-medium text-gray-600'>3</span>
-                  </div>
-                  <div className='flex-1 bg-[#F3F3F3] rounded-xl px-4 py-3'>
-                    <p className='text-gray-800 font-medium'>
-                      Recommended course: &quot;Sit, Stay, Come&quot;
-                    </p>
-                  </div>
-                </div>
-
-                <div className='flex items-center space-x-4'>
-                  <div className='w-8 h-8 rounded-full bg-white border-2 border-gray-300 flex items-center justify-center flex-shrink-0 relative z-10'>
-                    <span className='text-sm font-medium text-gray-600'>4</span>
-                  </div>
-                  <div className='flex-1 bg-[#F3F3F3] rounded-xl px-4 py-3'>
-                    <p className='text-gray-800 font-medium'>
-                      Scent games / mental tasks
-                    </p>
-                  </div>
+                <div className='bg-[#F3F3F3] rounded-xl px-4 py-3 animate-pulse'>
+                  <div className='h-4 bg-gray-300 rounded w-4/5'></div>
                 </div>
               </div>
-            </div>
+            ) : (
+              <div className='relative'>
+                {/* Connecting line */}
+                <div className='absolute left-4 top-8 bottom-8 w-0.5 bg-gray-300 z-0'></div>
+
+                <div className='space-y-4 relative z-10'>
+                  {(
+                    generatedPlan?.tasks || [
+                      'Daily walks of 45 minutes',
+                      'Scent games / mental tasks',
+                      'Recommended course: "Sit, Stay, Come"',
+                      'Behavioral training sessions',
+                    ]
+                  ).map((task, index) => (
+                    <div key={index} className='flex items-center space-x-4'>
+                      <div className='w-8 h-8 rounded-full bg-white border-2 border-gray-300 flex items-center justify-center flex-shrink-0 relative z-10'>
+                        <span className='text-sm font-medium text-gray-600'>
+                          {index + 1}
+                        </span>
+                      </div>
+                      <div className='flex-1 bg-[#F3F3F3] rounded-xl px-4 py-3'>
+                        <p className='text-gray-800 font-medium'>{task}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

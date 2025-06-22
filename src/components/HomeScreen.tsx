@@ -13,50 +13,105 @@ export default function HomeScreen({}: HomeScreenProps) {
   const [dragStartY, setDragStartY] = useState(0);
   const [healthCheckCompleted, setHealthCheckCompleted] = useState(false);
   const [tasks, setTasks] = useState([
-    { id: 1, text: 'Todo task', completed: false },
-    { id: 2, text: 'Todo task', completed: false },
-    { id: 3, text: 'Todo task', completed: false },
-    { id: 4, text: 'Health check', completed: false },
+    { id: 1, text: 'Health check', completed: false },
   ]);
 
-  // Check if health check is completed when component mounts
+  // Load generated tasks and health check status when component mounts
   useEffect(() => {
-    const checkHealthCheckStatus = () => {
+    const loadTasksAndHealthCheck = () => {
+      // Load generated tasks from localStorage
+      const generatedTasksJson = localStorage.getItem('generatedTasks');
+      let generatedTasks: string[] = [];
+
+      if (generatedTasksJson) {
+        try {
+          generatedTasks = JSON.parse(generatedTasksJson);
+        } catch (error) {
+          console.error('Error parsing generated tasks:', error);
+          // Use fallback tasks if parsing fails
+          generatedTasks = [
+            'Daily walks of 45 minutes',
+            'Scent games / mental tasks',
+            'Recommended course: "Sit, Stay, Come"',
+            'Behavioral training sessions',
+          ];
+        }
+      } else {
+        // Use fallback tasks if no generated tasks found
+        generatedTasks = [
+          'Daily walks of 45 minutes',
+          'Scent games / mental tasks',
+          'Recommended course: "Sit, Stay, Come"',
+          'Behavioral training sessions',
+        ];
+      }
+
+      // Check health check status
       const completed = localStorage.getItem('healthCheckCompleted') === 'true';
       const checkDate = localStorage.getItem('healthCheckDate');
       const today = new Date().toDateString();
 
       // Only show as completed if it was done today
       const isCompletedToday = completed && checkDate === today;
-
       setHealthCheckCompleted(isCompletedToday);
 
-      // Update the health check task completion status
-      setTasks(prevTasks =>
-        prevTasks.map(task =>
-          task.text === 'Health check'
-            ? { ...task, completed: isCompletedToday }
-            : task
-        )
-      );
+      // Get existing task completion status from localStorage
+      const taskCompletionJson = localStorage.getItem('taskCompletion');
+      let taskCompletion: { [key: string]: boolean } = {};
+
+      if (taskCompletionJson) {
+        try {
+          taskCompletion = JSON.parse(taskCompletionJson);
+        } catch (error) {
+          console.error('Error parsing task completion:', error);
+        }
+      }
+
+      // Create the full task list with generated tasks + health check
+      const allTasks = [
+        ...generatedTasks.map((taskText, index) => ({
+          id: index + 1,
+          text: taskText,
+          completed: taskCompletion[taskText] || false,
+        })),
+        {
+          id: generatedTasks.length + 1,
+          text: 'Health check',
+          completed: isCompletedToday,
+        },
+      ];
+
+      setTasks(allTasks);
     };
 
-    checkHealthCheckStatus();
+    loadTasksAndHealthCheck();
 
     // Listen for changes in localStorage (in case of updates from other tabs)
-    window.addEventListener('storage', checkHealthCheckStatus);
+    window.addEventListener('storage', loadTasksAndHealthCheck);
 
     return () => {
-      window.removeEventListener('storage', checkHealthCheckStatus);
+      window.removeEventListener('storage', loadTasksAndHealthCheck);
     };
   }, []);
 
   const toggleTask = (id: number) => {
-    setTasks(
-      tasks.map(task =>
+    setTasks(prevTasks => {
+      const updatedTasks = prevTasks.map(task =>
         task.id === id ? { ...task, completed: !task.completed } : task
-      )
-    );
+      );
+
+      // Save task completion status to localStorage (excluding health check)
+      const taskCompletion: { [key: string]: boolean } = {};
+      updatedTasks.forEach(task => {
+        if (task.text !== 'Health check') {
+          taskCompletion[task.text] = task.completed;
+        }
+      });
+
+      localStorage.setItem('taskCompletion', JSON.stringify(taskCompletion));
+
+      return updatedTasks;
+    });
   };
 
   const handleDragStart = (clientY: number) => {
@@ -191,7 +246,7 @@ export default function HomeScreen({}: HomeScreenProps) {
       {/* Main Content - white section */}
       <div
         className={`bg-[#F3F3F3] rounded-t-3xl w-full flex-shrink-0 relative transition-all duration-500 ease-out ${
-          isExpanded ? 'flex-1' : 'h-[450px]'
+          isExpanded ? 'h-[calc(100vh-200px)]' : 'h-[450px]'
         }`}
         style={{
           transform: isExpanded ? 'translateY(0)' : 'translateY(0)',
@@ -219,12 +274,12 @@ export default function HomeScreen({}: HomeScreenProps) {
         <div
           className={`px-6 space-y-4 transition-all duration-500 ease-out cursor-grab select-none ${
             isExpanded
-              ? 'h-full overflow-y-auto pb-20'
+              ? 'h-full overflow-y-auto pb-6'
               : 'overflow-hidden h-full'
           } ${isDragging ? 'cursor-grabbing' : ''}`}
           style={{
             paddingTop: '2rem',
-            paddingBottom: isExpanded ? '100px' : '1.5rem',
+            paddingBottom: isExpanded ? '2rem' : '1.5rem',
             opacity: isExpanded ? 1 : 0.95,
             transform: isExpanded ? 'translateY(0)' : 'translateY(10px)',
             transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
