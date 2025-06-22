@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { getDogProfile } from '@/utils/dogProfile';
 
 interface HealthCheckLoadingScreenProps {
   onComplete: () => void;
@@ -13,6 +14,7 @@ export default function HealthCheckLoadingScreen({
 }: HealthCheckLoadingScreenProps) {
   const [progress, setProgress] = useState(0);
   const router = useRouter();
+  const dogProfile = getDogProfile();
 
   useEffect(() => {
     if (!autoComplete) {
@@ -73,7 +75,8 @@ export default function HealthCheckLoadingScreen({
 
           {/* Subheading */}
           <p className='text-lg text-gray-600 text-center'>
-            Saving your daily log and updating [NAME]&apos;s care plan.
+            Saving your daily log and updating {dogProfile.name}&apos;s care
+            plan.
           </p>
 
           {/* Circular Progress */}
