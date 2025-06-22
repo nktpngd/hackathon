@@ -6,6 +6,7 @@ interface ResultsScreenProps {
   gender: 'boy' | 'girl' | '';
   age: string;
   behaviors: string[];
+  onStartPlan?: () => void;
 }
 
 export default function ResultsScreen({
@@ -14,6 +15,7 @@ export default function ResultsScreen({
   gender,
   age,
   behaviors,
+  onStartPlan,
 }: ResultsScreenProps) {
   // Get age display text
   const getAgeDisplay = (age: string) => {
@@ -102,7 +104,7 @@ export default function ResultsScreen({
   };
 
   return (
-    <div className='bg-[#FF6B5A] min-h-screen'>
+    <div className='bg-[#FF6B5A] bg-[url("/images/background.png")] bg-cover bg-center bg-no-repeat min-h-screen'>
       {/* Header */}
       <div className='px-6 py-6 text-white'>
         <h1 className='text-white text-[26px] font-bold leading-tight'>
@@ -223,7 +225,10 @@ export default function ResultsScreen({
 
         {/* Fixed Bottom Button */}
         <div className='fixed bottom-6 left-4 right-4 z-50'>
-          <button className='w-full bg-[#15CF7E] hover:bg-green-600 text-white font-medium py-4 px-6 rounded-2xl transition-colors flex items-center justify-center space-x-2'>
+          <button
+            onClick={onStartPlan}
+            className='w-full bg-[#15CF7E] hover:bg-green-600 text-white font-medium py-4 px-6 rounded-2xl transition-colors flex items-center justify-center space-x-2'
+          >
             <span>Start my plan</span>
             <svg
               className='w-5 h-5'

@@ -34,9 +34,9 @@ export default function Home() {
     if (currentStep < 4) {
       setCurrentStep(currentStep + 1);
     } else if (currentStep === 4) {
-      setCurrentStep(6); // Skip step 5, go directly to loading screen
+      setCurrentStep(5); // Go to loading screen (step 5)
     } else {
-      // Submit quiz data
+      // Quiz completed, loading screen will handle navigation
       console.log('Quiz completed:', quizData);
     }
   };
@@ -65,7 +65,7 @@ export default function Home() {
       case 3:
         return quizData.gender !== '';
       case 4:
-      case 6:
+      case 5:
         return true; // Behaviors are optional, loading screen doesn't need validation
       default:
         return false;
@@ -116,7 +116,7 @@ export default function Home() {
           />
         );
 
-      case 6:
+      case 5:
         return (
           <LoadingScreen
             dogName={quizData.name}
@@ -125,7 +125,7 @@ export default function Home() {
             age={quizData.age}
             behaviors={quizData.behaviors}
             onComplete={() => {
-              console.log('Quiz completed, navigating to results');
+              console.log('Loading complete, navigating to results');
             }}
           />
         );
@@ -158,7 +158,7 @@ export default function Home() {
         <div
           className='bg-[#FF574C] h-1 transition-all duration-300'
           style={{
-            width: `${((currentStep >= 6 ? 6 : currentStep + 1) / 6) * 100}%`,
+            width: `${((currentStep >= 5 ? 5 : currentStep + 1) / 5) * 100}%`,
           }}
         />
       </div>
@@ -169,7 +169,7 @@ export default function Home() {
       </main>
 
       {/* Fixed Bottom Section with Navigation */}
-      {currentStep < 6 && (
+      {currentStep < 5 && (
         <div className='bg-white px-6 py-4'>
           {/* Main Navigation Button */}
           <button

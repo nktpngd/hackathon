@@ -46,7 +46,7 @@ export default function LoadingScreen({
     }, 200);
 
     return () => clearInterval(interval);
-  }, [onComplete]);
+  }, [onComplete, router, dogName, breed, gender, age, behaviors]);
 
   return (
     <div className='text-center space-y-8'>

@@ -1,0 +1,346 @@
+import Image from 'next/image';
+import { useState } from 'react';
+
+interface HomeScreenProps {
+  dogName: string;
+}
+
+export default function HomeScreen({ dogName }: HomeScreenProps) {
+  const [currentDate] = useState(new Date());
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStartY, setDragStartY] = useState(0);
+  const [tasks, setTasks] = useState([
+    { id: 1, text: 'Todo task', completed: false },
+    { id: 2, text: 'Todo task', completed: false },
+    { id: 3, text: 'Todo task', completed: false },
+    { id: 4, text: 'Health check', completed: true },
+  ]);
+
+  const toggleTask = (id: number) => {
+    setTasks(
+      tasks.map(task =>
+        task.id === id ? { ...task, completed: !task.completed } : task
+      )
+    );
+  };
+
+  const handleDragStart = (clientY: number) => {
+    setIsDragging(true);
+    setDragStartY(clientY);
+  };
+
+  const handleDragMove = (clientY: number) => {
+    if (!isDragging) return;
+
+    const deltaY = dragStartY - clientY;
+    const threshold = 50; // minimum drag distance to trigger expand/collapse
+
+    if (Math.abs(deltaY) > threshold) {
+      if (deltaY > 0) {
+        // Dragging up - expand
+        if (!isExpanded) {
+          setIsExpanded(true);
+        }
+      } else {
+        // Dragging down - collapse
+        if (isExpanded) {
+          setIsExpanded(false);
+        }
+      }
+    }
+  };
+
+  const handleDragEnd = () => {
+    setIsDragging(false);
+    setDragStartY(0);
+  };
+
+  // Mouse events
+  const handleMouseDown = (e: React.MouseEvent) => {
+    // Don't start drag on interactive elements
+    const target = e.target as HTMLElement;
+    if (
+      target.closest('button') ||
+      target.closest('input') ||
+      target.closest('svg')
+    ) {
+      return;
+    }
+    e.preventDefault();
+    handleDragStart(e.clientY);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    handleDragMove(e.clientY);
+  };
+
+  const handleMouseUp = () => {
+    handleDragEnd();
+  };
+
+  // Touch events
+  const handleTouchStart = (e: React.TouchEvent) => {
+    // Don't start drag on interactive elements
+    const target = e.target as HTMLElement;
+    if (
+      target.closest('button') ||
+      target.closest('input') ||
+      target.closest('svg')
+    ) {
+      return;
+    }
+    e.preventDefault();
+    handleDragStart(e.touches[0].clientY);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    handleDragMove(e.touches[0].clientY);
+  };
+
+  const handleTouchEnd = () => {
+    handleDragEnd();
+  };
+
+  const formatDate = (date: Date) => {
+    const day = date.getDate();
+    const month = date.toLocaleString('default', { month: 'long' });
+    const year = date.getFullYear();
+
+    const suffix =
+      day === 1 || day === 21 || day === 31
+        ? 'st'
+        : day === 2 || day === 22
+          ? 'nd'
+          : day === 3 || day === 23
+            ? 'rd'
+            : 'th';
+
+    return `${day}${suffix} of ${month} ${year}`;
+  };
+
+  const weekDates = [17, 18, 19, 20, 21, 22, 23];
+  const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+  return (
+    <div
+      className='bg-[#FF6B5A] bg-[url("/images/background.png")] bg-cover bg-center bg-no-repeat min-h-screen w-full max-w-full overflow-x-hidden flex flex-col'
+      onMouseMove={isDragging ? handleMouseMove : undefined}
+      onMouseUp={isDragging ? handleMouseUp : undefined}
+      onMouseLeave={isDragging ? handleMouseUp : undefined}
+    >
+      {/* Header */}
+      <div className='px-6 py-6 flex-shrink-0'>
+        <div className='flex items-center justify-between mb-6'>
+          <div className='flex items-center space-x-2'>
+            <div className='rounded-2xl flex gap-[7px] items-center justify-center'>
+              <Image
+                src='/images/box-logo.png'
+                alt='Pawchie'
+                width={44}
+                height={44}
+                className='w-[44px] h-[44px]'
+              />
+              <div className='flex flex-col'>
+                <p className='text-xs mt-1'>Hello, my little champion,</p>
+                <div className='flex items-center space-x-2'>
+                  <h1 className='text-2xl font-bold'>Pawchie</h1>
+                  <svg
+                    className='w-[15px] h-[15px]'
+                    fill='currentColor'
+                    viewBox='0 0 24 24'
+                  >
+                    <path d='M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z' />
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className='w-8 h-8 rounded-full flex items-center justify-center'>
+            <Image
+              src='/images/streak.png'
+              alt='streak'
+              width={32}
+              height={32}
+              className='w-full h-full'
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Spacer that grows when collapsed */}
+      {!isExpanded && <div className='flex-1'></div>}
+
+      {/* Main Content - white section */}
+      <div
+        className={`bg-[#F3F3F3] rounded-t-3xl w-full flex-shrink-0 relative transition-all duration-500 ease-out ${
+          isExpanded ? 'flex-1' : 'h-[450px]'
+        }`}
+        style={{
+          transform: isExpanded ? 'translateY(0)' : 'translateY(0)',
+          transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+        }}
+      >
+        {/* Drag Handle */}
+        <div
+          className={`absolute top-2 left-1/2 transform -translate-x-1/2 z-10 w-12 h-1 rounded-full transition-all duration-300 cursor-grab select-none ${
+            isDragging
+              ? 'bg-gray-600 cursor-grabbing'
+              : 'bg-gray-400 hover:bg-gray-500'
+          }`}
+          onMouseDown={handleMouseDown}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          aria-label={
+            isExpanded
+              ? 'Drag down to collapse content'
+              : 'Drag up to expand content'
+          }
+        />
+
+        <div
+          className={`px-6 space-y-4 transition-all duration-500 ease-out cursor-grab select-none ${
+            isExpanded
+              ? 'h-full overflow-y-auto pb-20'
+              : 'overflow-hidden h-full'
+          } ${isDragging ? 'cursor-grabbing' : ''}`}
+          style={{
+            paddingTop: '2rem',
+            paddingBottom: isExpanded ? '100px' : '1.5rem',
+            opacity: isExpanded ? 1 : 0.95,
+            transform: isExpanded ? 'translateY(0)' : 'translateY(10px)',
+            transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+          }}
+          onMouseDown={handleMouseDown}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
+          {/* Calendar */}
+          <div className='rounded-2xl p-2'>
+            <div className='flex items-center justify-between'>
+              {dayNames.map((day, index) => (
+                <div key={day} className='text-center'>
+                  <p className='text-[#16191E] text-[10px] mb-[2px]'>{day}</p>
+                  <div
+                    className={`w-[32px] h-[32px] rounded-full flex items-center justify-center text-xs font-bold ${
+                      weekDates[index] === 21
+                        ? 'bg-[#FF574C] text-white'
+                        : 'bg-white text-[#16191E]'
+                    }`}
+                  >
+                    {weekDates[index]}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Daily Tasks */}
+          <div>
+            <div className='flex items-center space-x-2 mb-4'>
+              <Image
+                src='/todos.svg'
+                alt='todos'
+                width={28}
+                height={28}
+                className='w-[28px] h-[28px]'
+              />
+              <h3 className='text-2xl font-bold text-[#383C44]'>Daily tasks</h3>
+            </div>
+
+            <div className='space-y-3'>
+              {tasks.map(task => (
+                <div
+                  key={task.id}
+                  className='flex items-center space-x-3 bg-white p-4 rounded-2xl'
+                >
+                  <button
+                    onClick={() => toggleTask(task.id)}
+                    className={`w-6 h-6 rounded border-2 flex items-center justify-center ${
+                      task.completed
+                        ? 'bg-green-500 border-green-500'
+                        : 'border-[#A4A4A4]'
+                    }`}
+                  >
+                    {task.completed && (
+                      <svg
+                        className='w-4 h-4 text-white'
+                        fill='currentColor'
+                        viewBox='0 0 24 24'
+                      >
+                        <path d='M20.285 2l-11.285 11.567-5.286-5.011-3.714 3.716 9 8.728 15-15.285z' />
+                      </svg>
+                    )}
+                  </button>
+                  <span
+                    className={`flex-1 ${task.completed ? 'text-gray-500 line-through' : 'text-gray-800'}`}
+                  >
+                    {task.text}
+                  </span>
+                  <Image
+                    src='/info.svg'
+                    alt='info'
+                    width={20}
+                    height={20}
+                    className='w-[20px] h-[20px]'
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom Navigation - Now static at bottom */}
+      <div className='bg-white border-t border-gray-200 px-6 py-4 w-full max-w-full flex-shrink-0'>
+        <div className='flex items-center justify-around'>
+          <button className='flex flex-col items-center space-y-1'>
+            <Image
+              src='/icons/plan.svg'
+              alt='plan'
+              width={26}
+              height={26}
+              className='w-[26px] h-[26px]'
+            />
+            <span className='text-xs font-bold text-[#383C44]'>My Plan</span>
+          </button>
+
+          <button className='flex flex-col items-center space-y-1'>
+            <Image
+              src='/icons/library.svg'
+              alt='library'
+              width={26}
+              height={26}
+              className='w-[26px] h-[26px]'
+            />
+            <span className='text-xs text-[#A4A4A4]'>Library</span>
+          </button>
+
+          <button className='flex flex-col items-center space-y-1'>
+            <Image
+              src='/icons/commands.svg'
+              alt='commands'
+              width={26}
+              height={26}
+              className='w-[26px] h-[26px]'
+            />
+            <span className='text-xs text-[#A4A4A4]'>Training</span>
+          </button>
+
+          <button className='flex flex-col items-center space-y-1'>
+            <Image
+              src='/icons/experts.svg'
+              alt='experts'
+              width={26}
+              height={26}
+              className='w-[26px] h-[26px]'
+            />
+            <span className='text-xs text-[#A4A4A4]'>Experts</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
