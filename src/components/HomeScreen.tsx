@@ -1,12 +1,13 @@
 import Image from 'next/image';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 interface HomeScreenProps {
   dogName: string;
 }
 
-export default function HomeScreen({ dogName }: HomeScreenProps) {
-  const [currentDate] = useState(new Date());
+export default function HomeScreen({}: HomeScreenProps) {
+  const router = useRouter();
   const [isExpanded, setIsExpanded] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [dragStartY, setDragStartY] = useState(0);
@@ -100,23 +101,6 @@ export default function HomeScreen({ dogName }: HomeScreenProps) {
 
   const handleTouchEnd = () => {
     handleDragEnd();
-  };
-
-  const formatDate = (date: Date) => {
-    const day = date.getDate();
-    const month = date.toLocaleString('default', { month: 'long' });
-    const year = date.getFullYear();
-
-    const suffix =
-      day === 1 || day === 21 || day === 31
-        ? 'st'
-        : day === 2 || day === 22
-          ? 'nd'
-          : day === 3 || day === 23
-            ? 'rd'
-            : 'th';
-
-    return `${day}${suffix} of ${month} ${year}`;
   };
 
   const weekDates = [17, 18, 19, 20, 21, 22, 23];
@@ -279,13 +263,21 @@ export default function HomeScreen({ dogName }: HomeScreenProps) {
                   >
                     {task.text}
                   </span>
-                  <Image
-                    src='/info.svg'
-                    alt='info'
-                    width={20}
-                    height={20}
-                    className='w-[20px] h-[20px]'
-                  />
+                  <button
+                    onClick={() => {
+                      if (task.text === 'Health check') {
+                        router.push('/health-check');
+                      }
+                    }}
+                  >
+                    <Image
+                      src='/info.svg'
+                      alt='info'
+                      width={20}
+                      height={20}
+                      className='w-[20px] h-[20px]'
+                    />
+                  </button>
                 </div>
               ))}
             </div>
