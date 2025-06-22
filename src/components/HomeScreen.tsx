@@ -290,10 +290,8 @@ export default function HomeScreen({}: HomeScreenProps) {
         </div>
 
         <div
-          className={`px-6 space-y-4 transition-all duration-500 ease-out ${
-            isExpanded
-              ? 'h-full overflow-y-auto pb-6'
-              : 'overflow-hidden h-full'
+          className={`px-6 space-y-4 transition-all duration-500 ease-out h-full overflow-y-auto ${
+            isExpanded ? 'pb-6' : 'pb-4'
           }`}
           style={{
             paddingTop: '2rem',
