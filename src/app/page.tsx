@@ -136,10 +136,7 @@ export default function Home() {
   };
 
   return (
-    <div
-      className='min-h-screen bg-white flex flex-col'
-      suppressHydrationWarning
-    >
+    <div className='min-h-dvh bg-white flex flex-col' suppressHydrationWarning>
       {/* Header */}
       <header className='flex items-center justify-center py-6 border-b border-gray-200'>
         <div className='flex items-center space-x-2'>
