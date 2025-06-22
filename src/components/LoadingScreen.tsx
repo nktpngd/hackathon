@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { generatePersonalizedPlan } from '../services/planGenerator';
 
 interface LoadingScreenProps {
   dogName: string;
@@ -20,33 +21,84 @@ export default function LoadingScreen({
   onComplete,
 }: LoadingScreenProps) {
   const [progress, setProgress] = useState(0);
+  const [isGenerating, setIsGenerating] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
+    const generatePlan = async () => {
+      try {
+        // Start with initial progress
+        setProgress(10);
+
+        // Call the API to generate the plan
+        const plan = await generatePersonalizedPlan({
+          dogName,
+          breed,
+          gender,
+          age,
+          behaviors,
+        });
+
+        setProgress(90);
+
+        // Save the generated plan data to localStorage for the results page
+        localStorage.setItem('generatedPlan', JSON.stringify(plan));
+        localStorage.setItem('generatedTasks', JSON.stringify(plan.tasks));
+
+        // Complete the progress
+        setProgress(100);
+        setIsGenerating(false);
+
+        // Navigate to results after a short delay
+        setTimeout(() => {
+          const params = new URLSearchParams({
+            name: dogName,
+            breed,
+            gender,
+            age,
+            behaviors: behaviors.join(','),
+          });
+          router.push(`/results?${params.toString()}`);
+          onComplete();
+        }, 1000);
+      } catch (error) {
+        console.error('Error generating plan:', error);
+
+        // Even on error, complete the flow with fallback
+        setProgress(100);
+        setIsGenerating(false);
+
+        setTimeout(() => {
+          const params = new URLSearchParams({
+            name: dogName,
+            breed,
+            gender,
+            age,
+            behaviors: behaviors.join(','),
+          });
+          router.push(`/results?${params.toString()}`);
+          onComplete();
+        }, 1000);
+      }
+    };
+
+    generatePlan();
+  }, [dogName, breed, gender, age, behaviors, onComplete, router]);
+
+  // Simulate progress animation while API is loading
+  useEffect(() => {
+    if (!isGenerating) return;
+
     const interval = setInterval(() => {
       setProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setTimeout(() => {
-            // Navigate to results page with query parameters
-            const params = new URLSearchParams({
-              name: dogName,
-              breed,
-              gender,
-              age,
-              behaviors: behaviors.join(','),
-            });
-            router.push(`/results?${params.toString()}`);
-            onComplete();
-          }, 1000);
-          return 100;
-        }
-        return prev + 10;
+        // Don't go beyond 80% while still generating
+        if (prev >= 80) return prev;
+        return prev + 5;
       });
-    }, 200);
+    }, 300);
 
     return () => clearInterval(interval);
-  }, [onComplete, router, dogName, breed, gender, age, behaviors]);
+  }, [isGenerating]);
 
   return (
     <div className='text-center space-y-8'>
@@ -79,7 +131,9 @@ export default function LoadingScreen({
 
         {/* Progress content */}
         <div className='absolute inset-0 flex flex-col items-center justify-center'>
-          <p className='text-gray-400 text-sm mb-2'>Analyzing</p>
+          <p className='text-gray-400 text-sm mb-2'>
+            {isGenerating ? 'Analyzing' : 'Complete'}
+          </p>
           <p className='text-4xl font-bold text-gray-800'>{progress}%</p>
         </div>
       </div>

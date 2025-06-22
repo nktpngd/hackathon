@@ -51,9 +51,27 @@ export default function ResultsScreen({
   useEffect(() => {
     // Prevent multiple calls if already loaded
     if (hasLoadedRef.current) return;
+    hasLoadedRef.current = true;
 
-    const loadPlan = async () => {
-      hasLoadedRef.current = true;
+    // Check if we have a pre-generated plan from the loading screen
+    const savedPlan = localStorage.getItem('generatedPlan');
+
+    if (savedPlan) {
+      try {
+        const plan = JSON.parse(savedPlan);
+        setGeneratedPlan(plan);
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Error parsing saved plan:', error);
+        // If parsing fails, fall back to generating a new plan
+        loadPlanFromAPI();
+      }
+    } else {
+      // If no saved plan, generate a new one (fallback)
+      loadPlanFromAPI();
+    }
+
+    async function loadPlanFromAPI() {
       setIsLoading(true);
       try {
         const plan = await generatePersonalizedPlan({
@@ -89,9 +107,7 @@ export default function ResultsScreen({
       } finally {
         setIsLoading(false);
       }
-    };
-
-    loadPlan();
+    }
   }, [dogName, breed, gender, age, stableBehaviors]);
 
   // Get dog image based on age
